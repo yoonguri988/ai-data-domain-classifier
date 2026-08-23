@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: back
+
+  # spring-dotenv 가 프로젝트 루트의 .env 를 읽어 아래 ${VAR} 자리에 주입한다. (.env.example 참고)
+  datasource:
+    url: jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}/${DB_SERVICE}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate # 스키마는 03_DDL_DML_DCL_Oracle18cXE.sql 로 직접 관리하므로 애플리케이션이 스키마를 건드리지 않는다.
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: ${DB_USERNAME}
+    show-sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      timeout: ${REDIS_TIMEOUT}
+
+  config:
+    import:
+      - optional:application-oauth.yml
+      - optional:file:.env[.properties]
+
+  # mail:
+  #   host: ${MAIL_HOST:smtp.gmail.com}
+  #   port: ${MAIL_PORT:587}
+  #   username: ${MAIL_USERNAME:}
+  #   password: ${MAIL_PASSWORD:}
+  #   properties:
+  #     mail.smtp.auth: true
+  #     mail.smtp.starttls.enable: true
+
+server:
+  port: ${SERVER_PORT}
+
+# JWT 설정 - JwtProvider 에서 사용
+jwt:
+  issuer: yoonjeong-choi
+  secret: ${JWT_SECRET:CHANGE_ME_32_BYTE_MINIMUM_SECRET_KEY_FOR_HS256}
+  access-token-validity-seconds: ${JWT_ACCESS_TTL} # 30분
+  refresh-token-validity-seconds: ${JWT_REFRESH_TTL} # 14일
+
+# 외부 AI API 설정 - AiDomainClassifier 에서 사용 (RestClient)
+# ai:
+#   api-base-url: ${AI_API_BASE_URL:https://api.example-ai.com}
+#   api-key: ${AI_API_KEY:}
+#   model-name: ${AI_MODEL_NAME:claude-haiku}
+
+# CoolSMS 설정
+# coolsms:
+#   api-key: ${COOLSMS_API_KEY:}
+#   api-secret: ${COOLSMS_API_SECRET:}
+#   sender-no: ${COOLSMS_SENDER_NO:}
+
+springdoc:
+  swagger-ui:
+    enabled: true # Swagger UI 활성화 여부 (기본값: true)
+    path: swagger-ui.html # Swagger UI 접속 경로 변경 (기본값: /swagger-ui.html)
+    operationsSorter: method # API 정렬 기준 (alpha: 알파벳순, method: HTTP 메서드 순)
+    tagsSorter: alpha # 태그 정렬 방식 (alpha: 알파벳순 정렬)
+    display-request-duration: true # 요청 실행 시간 표시 여부
+    doc-expansion: none # Swagger UI에서 API 설명의 기본 펼침 상태 (none: 닫힘, list: 펼침, full: 전체 펼침)
+    persistAuthorization: true # 페이지 새로고침 후에도 Authorization 헤더 유지 여부
+    defaultModelsExpandDepth: -1 # 모델 스키마의 기본 펼침 깊이 (-1이면 모델 펼쳐지지 않음)
+  api-docs:
+    enabled: true # API 문서(`/v3/api-docs`) 활성화 여부 (기본값: true)
+    path: /v3/api-docs # API 문서의 엔드포인트 변경 (기본값: /v3/api-docs)
+    groups.enabled: true # 여러 개의 API 그룹을 지원할지 여부

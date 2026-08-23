@@ -4,7 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'pf.cyj.sys'
+group = 'pf.cyj'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -26,9 +26,9 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
    
   // 보안 + redis + oauth2.0
-  // implementation 'org.springframework.boot:spring-boot-starter-security'
-  // implementation 'org.springframework.boot:spring-boot-starter-data-redis' 
-  // implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+  implementation 'org.springframework.boot:spring-boot-starter-data-redis' 
+  implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
    
 	// lombok
 	compileOnly 'org.projectlombok:lombok'
@@ -37,13 +37,13 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
    
 	// JWT
-	// implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-  // implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-  // implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+  implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+  implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
    
   // Swagger/OpenAPI
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
-  //implementation 'org.springdoc:springdoc-openapi-starter-oauth2:2.5.0'
+  // implementation 'org.springdoc:springdoc-openapi-starter-oauth2:2.5.0'
    
 	// oracle 
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
@@ -57,7 +57,7 @@ dependencies {
   // test
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1'
-  // testImplementation 'org.springframework.security:spring-security-test'
+  testImplementation 'org.springframework.security:spring-security-test'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
    
   implementation 'org.apache.pdfbox:pdfbox:3.0.5'
