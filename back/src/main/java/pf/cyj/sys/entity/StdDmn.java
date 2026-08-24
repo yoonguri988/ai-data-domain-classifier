@@ -1,5 +1,9 @@
 package pf.cyj.sys.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,13 +13,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 /**
  * STANDARD_DOMAIN - 승인 완료된 확정 표준 도메인(확정본 성격). 컬럼당 최신 1건.
@@ -51,7 +53,8 @@ public class StdDmn {
     @JoinColumn(name = "CONFIRMED_BY", nullable = false)
     private AppUsr confirmedBy;
 
-    @CreationTimestamp
-    @Column(name = "CONFIRMED_AT", nullable = false, updatable = false)
+    /** 컬럼당 최신 1건 upsert 구조이므로, 재승인 시(버전업) 최신 확정 시각으로 갱신되도록 @UpdateTimestamp 를 사용한다 */
+    @UpdateTimestamp
+    @Column(name = "CONFIRMED_AT", nullable = false)
     private LocalDateTime confirmedAt;
 }

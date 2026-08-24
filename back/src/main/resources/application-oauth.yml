@@ -1,0 +1,19 @@
+# OAuth2.0 Google 소셜 로그인 클라이언트 등록.
+# application.yml 의 spring.config.import: optional:application-oauth.yml 로 로드된다.
+#
+# OAUTH_GOOGLE_CLIENT_ID / OAUTH_GOOGLE_CLIENT_SECRET 은 .env 에서 채운다.
+# 값을 채우지 않으면 dummy- 기본값이 들어가서 애플리케이션은 정상 기동하지만,
+# 실제 "Google로 로그인"을 누르면 Google 쪽에서 invalid_client 오류가 난다.
+# Google Cloud Console(APIs & Services > Credentials)에서 OAuth 클라이언트 ID를 발급받아
+# 승인된 리디렉션 URI에 http://localhost:8080/login/oauth2/code/google 을 등록한 뒤 .env 에 채워 넣을 것.
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH_GOOGLE_CLIENT_ID:dummy-google-client-id}
+            client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:dummy-google-client-secret}
+            scope:
+              - email
+              - profile

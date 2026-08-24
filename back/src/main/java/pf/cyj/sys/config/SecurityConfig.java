@@ -24,10 +24,17 @@ import pf.cyj.sys.security.JwtProvider;
 
 /**
  * Spring Security 설정 - JWT 기반 stateless 인증 + Google OAuth2 로그인.
- * PasswordEncoder Bean 은 SecurityBeanConfig 에 그대로 둔다(회원가입/로그인 Service 가 이미 사용 중이라
+ * PasswordEncoder Bean 은 PasswordConfig 에 그대로 둔다(회원가입/로그인 Service 가 이미 사용 중이라
  * 굳이 옮기지 않았다).
- * authorizeHttpRequests 의 "/api/**" 하위 세부 경로는 5단계(Controller)에서 실제 @RequestMapping 이
- * 정해지면 다시 다듬는다 — 지금은 인증 자체가 필요한지 여부만 우선 구분해 둔 잠정 값이다.
+ * authorizeHttpRequests 는 5단계(Controller)에서 확정된 실제 @RequestMapping 기준으로 다듬었다:
+ * - 회원가입/로그인/재발급("/auth/signup", "/auth/login", "/auth/reissue")과 Google OAuth2 로그인
+ *   흐름("/oauth2/**", "/login/**")만 명시적으로 permitAll 이고, "/auth/logout" 을 포함한 그 나머지는
+ *   전부 anyRequest().authenticated() 기본값을 따른다(화이트리스트 방식 — 새 엔드포인트를 추가해도
+ *   실수로 인증 없이 열리지 않는다).
+ * - GET "/api/common-codes/**", "/api/domains/**" 만 예외적으로 비로그인 조회를 허용한다(화면 초기
+ *   로딩용 콤보박스).
+ * - 관리자 전용(공통코드 등록, 표준도메인 승인/반려/대기목록)은 여기서 경로로 막지 않고 각 Controller
+ *   메서드에 @PreAuthorize("hasRole('ADMIN')") 로 세밀하게 제어한다(@EnableMethodSecurity).
  */
 @Configuration
 @EnableWebSecurity
@@ -53,13 +60,14 @@ public class SecurityConfig {
                 .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**", "/oauth2/**", "/login/**",
+                                "/auth/signup", "/auth/login", "/auth/reissue",
+                                "/oauth2/**", "/login/**",
                                 "/swagger-ui/**", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
                         // 공통코드/도메인 후보 마스터는 화면 초기 로딩용이라 비로그인 조회를 열어둔다
                         .requestMatchers(HttpMethod.GET, "/api/common-codes/**", "/api/domains/**").permitAll()
-                        .requestMatchers("/api/**").authenticated()
+                        // "/auth/logout" 을 포함한 그 외 전부는 인증이 필요하다(화이트리스트 방식)
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
