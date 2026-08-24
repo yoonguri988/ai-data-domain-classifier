@@ -446,10 +446,10 @@ INSERT INTO DOMAIN_CODE (DOMAIN_CODE, DOMAIN_NAME_KO, SORT_ORDER) VALUES ('FLAG'
 
 -- 5-4. 데모 사용자 (비밀번호는 BCrypt 해시 예시 - 운영 배포시 반드시 재발급)
 INSERT INTO APP_USER (LOGIN_ID, PASSWORD, USER_NAME, EMAIL, DEPT_NAME, USER_STATUS)
-VALUES ('admin', '$2a$10$7QJ3n0m8N0nq2n7z0h4mSuKz2rYQGm0qkC0m8m8m8m8m8m8m8m8m8', '관리자', 'admin@portfolio.dev', '데이터플랫폼팀', 'ACTIVE');
+VALUES ('admin', '$2a$10$OIQMCDHhCTi4301fsgH9TeYoKhuFUNBMHteDpS38r0lc.oLOsp2Iu', '관리자', 'admin@portfolio.dev', '데이터플랫폼팀', 'ACTIVE');
 
 INSERT INTO APP_USER (LOGIN_ID, PASSWORD, USER_NAME, EMAIL, DEPT_NAME, USER_STATUS)
-VALUES ('reviewer1', '$2a$10$7QJ3n0m8N0nq2n7z0h4mSuKz2rYQGm0qkC0m8m8m8m8m8m8m8m8m8', '김승인', 'reviewer1@portfolio.dev', '데이터거버넌스팀', 'ACTIVE');
+VALUES ('reviewer1', '$2a$10$OIQMCDHhCTi4301fsgH9TeYoKhuFUNBMHteDpS38r0lc.oLOsp2Iu', '김승인', 'reviewer1@portfolio.dev', '데이터거버넌스팀', 'ACTIVE');
 
 INSERT INTO USER_ROLE (USER_ID, ROLE_ID)
 SELECT U.USER_ID, R.ROLE_ID FROM APP_USER U, APP_ROLE R WHERE U.LOGIN_ID = 'admin'     AND R.ROLE_CODE = 'ROLE_ADMIN';
