@@ -17,3 +17,6 @@ spring:
             scope:
               - email
               - profile
+app:
+  oauth2:
+    redirect-url: http://localhost:3000

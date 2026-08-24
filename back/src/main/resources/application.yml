@@ -4,6 +4,9 @@ spring:
 
   # spring-dotenv 가 프로젝트 루트의 .env 를 읽어 아래 ${VAR} 자리에 주입한다. (.env.example 참고)
   datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
     url: jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}/${DB_SERVICE}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
