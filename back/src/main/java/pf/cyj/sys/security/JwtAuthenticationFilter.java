@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import pf.cyj.sys.oauth2.CustomUserPrincipal;
+import pf.cyj.sys.oauth2.CustomOAuth2User;
 
 /**
  * JWT 인증 필터.
@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 @SuppressWarnings("unchecked")
                 List<String> roles = claims.get("roles", List.class);
 
-                CustomUserPrincipal principal = new CustomUserPrincipal(userId, loginId, roles);
+                CustomOAuth2User principal = new CustomOAuth2User(userId, loginId, roles);
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth);
