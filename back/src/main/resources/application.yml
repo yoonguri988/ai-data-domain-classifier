@@ -54,6 +54,9 @@ jwt:
   access-token-validity-seconds: ${JWT_ACCESS_TTL} # 30분
   refresh-token-validity-seconds: ${JWT_REFRESH_TTL} # 14일
 
+
+file:
+  upload-dir: uploads
 # 외부 AI API 설정 - AiDomainClassifier 에서 사용 (RestClient)
 # ai:
 #   api-base-url: ${AI_API_BASE_URL:https://api.example-ai.com}
