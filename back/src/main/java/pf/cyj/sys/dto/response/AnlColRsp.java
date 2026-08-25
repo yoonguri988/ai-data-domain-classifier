@@ -1,22 +1,31 @@
 package pf.cyj.sys.dto.response;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pf.cyj.sys.entity.AnlCol;
 
-public record AnlColRsp(
-        Long columnId,
-        String datasetId,
-        String columnName,
-        String columnNameKo,
-        String columnNameEn,
-        String dataType,
-        Integer dataLength,
-        Integer dataScale,
-        boolean numericYn,
-        boolean dateYn,
-        boolean uniqueYn,
-        LocalDateTime createdAt
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AnlColRsp {
+
+    private Long columnId;
+    private String datasetId;
+    private String columnName;
+    private String columnNameKo;
+    private String columnNameEn;
+    private String dataType;
+    private Integer dataLength;
+    private Integer dataScale;
+    private boolean numericYn;
+    private boolean dateYn;
+    private boolean uniqueYn;
+    private LocalDateTime createdAt;
+
     public static AnlColRsp from(AnlCol col) {
         return new AnlColRsp(
                 col.getColumnId(),

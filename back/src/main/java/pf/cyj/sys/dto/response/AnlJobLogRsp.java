@@ -1,21 +1,30 @@
 package pf.cyj.sys.dto.response;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pf.cyj.sys.entity.AnlJobLog;
 import pf.cyj.sys.entity.type.ExecStatCd;
 
-public record AnlJobLogRsp(
-        Long logId,
-        Long jobId,
-        String jobName,
-        ExecStatCd execStatus,
-        LocalDateTime startedAt,
-        LocalDateTime endedAt,
-        Integer successCount,
-        Integer failCount,
-        String errorMessage,
-        String executedByName
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AnlJobLogRsp {
+
+    private Long logId;
+    private Long jobId;
+    private String jobName;
+    private ExecStatCd execStatus;
+    private LocalDateTime startedAt;
+    private LocalDateTime endedAt;
+    private Integer successCount;
+    private Integer failCount;
+    private String errorMessage;
+    private String executedByName;
+
     public static AnlJobLogRsp from(AnlJobLog log) {
         return new AnlJobLogRsp(
                 log.getLogId(),

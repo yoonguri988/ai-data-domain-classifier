@@ -1,23 +1,32 @@
 package pf.cyj.sys.dto.response;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pf.cyj.sys.entity.StdDmnReq;
 import pf.cyj.sys.entity.type.ReqStatCd;
 
-public record StdDmnReqRsp(
-        Long requestId,
-        Long columnId,
-        String columnName,
-        String proposedDomainCode,
-        String proposedDomainNameKo,
-        boolean aiSuggestedYn,
-        ReqStatCd requestStatus,
-        String requestedByName,
-        LocalDateTime requestedAt,
-        String reviewedByName,
-        LocalDateTime reviewedAt,
-        String rejectReason
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class StdDmnReqRsp {
+
+    private Long requestId;
+    private Long columnId;
+    private String columnName;
+    private String proposedDomainCode;
+    private String proposedDomainNameKo;
+    private boolean aiSuggestedYn;
+    private ReqStatCd requestStatus;
+    private String requestedByName;
+    private LocalDateTime requestedAt;
+    private String reviewedByName;
+    private LocalDateTime reviewedAt;
+    private String rejectReason;
+
     public static StdDmnReqRsp from(StdDmnReq req) {
         return new StdDmnReqRsp(
                 req.getRequestId(),
