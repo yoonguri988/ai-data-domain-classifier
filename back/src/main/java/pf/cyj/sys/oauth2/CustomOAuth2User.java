@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * JWT 클레임(userId/loginId/roles)으로부터 구성되는 인증 주체.
  * JwtAuthenticationFilter 가 Access Token 을 파싱해 이 객체를 만들고 SecurityContext 에 저장한다.
  */
-public class CustomUserPrincipal implements UserDetails {
+public class CustomOAuth2User implements UserDetails {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,7 +19,7 @@ public class CustomUserPrincipal implements UserDetails {
     private final String loginId;
     private final List<String> roles;
 
-    public CustomUserPrincipal(Long userId, String loginId, List<String> roles) {
+    public CustomOAuth2User(Long userId, String loginId, List<String> roles) {
         this.userId = userId;
         this.loginId = loginId;
         this.roles = (roles == null || roles.isEmpty()) ? Collections.emptyList() : roles;
