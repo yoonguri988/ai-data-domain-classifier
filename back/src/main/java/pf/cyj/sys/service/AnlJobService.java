@@ -42,23 +42,23 @@ public class AnlJobService {
                 .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + creatorId));
 
         AnlDset dset = null;
-        if (req.datasetId() != null && !req.datasetId().isBlank()) {
-            dset = anlDsetRepository.findById(req.datasetId())
-                    .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.datasetId()));
+        if (req.getDatasetId() != null && !req.getDatasetId().isBlank()) {
+            dset = anlDsetRepository.findById(req.getDatasetId())
+                    .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.getDatasetId()));
         }
 
         AnlJob job = AnlJob.builder()
-                .jobName(req.jobName())
+                .jobName(req.getJobName())
                 .anlDset(dset)
                 .createdBy(creator)
-                .cronExpr(req.cronExpr())
+                .cronExpr(req.getCronExpr())
                 .build();
 
-        if (req.jobType() != null && !req.jobType().isBlank()) {
-            job.setJobType(req.jobType());
+        if (req.getJobType() != null && !req.getJobType().isBlank()) {
+            job.setJobType(req.getJobType());
         }
-        if (req.scheduleType() != null && !req.scheduleType().isBlank()) {
-            job.setScheduleType(SchdTypCd.valueOf(req.scheduleType()));
+        if (req.getScheduleType() != null && !req.getScheduleType().isBlank()) {
+            job.setScheduleType(SchdTypCd.valueOf(req.getScheduleType()));
         }
 
         return AnlJobRsp.from(anlJobRepository.save(job));

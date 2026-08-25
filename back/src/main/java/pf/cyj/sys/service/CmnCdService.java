@@ -25,14 +25,14 @@ public class CmnCdService {
 
     @Transactional
     public CmnCdGrpRsp saveGrp(CmnCdGrpSaveReq req) {
-        CmnCdGrp grp = cmnCdGrpRepository.findById(req.codeGroup())
+        CmnCdGrp grp = cmnCdGrpRepository.findById(req.getCodeGroup())
                 .map(existing -> {
-                    existing.setGroupName(req.groupName());
+                    existing.setGroupName(req.getGroupName());
                     return existing;
                 })
                 .orElseGet(() -> CmnCdGrp.builder()
-                        .codeGroup(req.codeGroup())
-                        .groupName(req.groupName())
+                        .codeGroup(req.getCodeGroup())
+                        .groupName(req.getGroupName())
                         .build());
 
         return CmnCdGrpRsp.from(cmnCdGrpRepository.save(grp));
@@ -44,21 +44,21 @@ public class CmnCdService {
 
     @Transactional
     public CmnCdRsp saveCd(CmnCdSaveReq req) {
-        CmnCdId id = new CmnCdId(req.codeGroup(), req.codeValue());
+        CmnCdId id = new CmnCdId(req.getCodeGroup(), req.getCodeValue());
 
         CmnCd cd = cmnCdRepository.findById(id)
                 .map(existing -> {
-                    existing.setCodeName(req.codeName());
-                    existing.setSortOrder(req.sortOrder());
-                    existing.setUseYn(Boolean.TRUE.equals(req.useYn()));
+                    existing.setCodeName(req.getCodeName());
+                    existing.setSortOrder(req.getSortOrder());
+                    existing.setUseYn(Boolean.TRUE.equals(req.getUseYn()));
                     return existing;
                 })
                 .orElseGet(() -> CmnCd.builder()
-                        .codeGroup(req.codeGroup())
-                        .codeValue(req.codeValue())
-                        .codeName(req.codeName())
-                        .sortOrder(req.sortOrder())
-                        .useYn(Boolean.TRUE.equals(req.useYn()))
+                        .codeGroup(req.getCodeGroup())
+                        .codeValue(req.getCodeValue())
+                        .codeName(req.getCodeName())
+                        .sortOrder(req.getSortOrder())
+                        .useYn(Boolean.TRUE.equals(req.getUseYn()))
                         .build());
 
         return CmnCdRsp.from(cmnCdRepository.save(cd));

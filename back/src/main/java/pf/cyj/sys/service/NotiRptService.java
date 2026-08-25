@@ -39,21 +39,21 @@ public class NotiRptService {
 
     @Transactional
     public NotiLogRsp recordNotification(NotiLogCreateReq req) {
-        AppUsr target = appUsrRepository.findById(req.targetUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 수신 대상입니다: " + req.targetUserId()));
+        AppUsr target = appUsrRepository.findById(req.getTargetUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 수신 대상입니다: " + req.getTargetUserId()));
 
         StdDmnReq relatedReq = null;
-        if (req.relatedRequestId() != null) {
-            relatedReq = stdDmnReqRepository.findById(req.relatedRequestId())
-                    .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 신청 건입니다: " + req.relatedRequestId()));
+        if (req.getRelatedRequestId() != null) {
+            relatedReq = stdDmnReqRepository.findById(req.getRelatedRequestId())
+                    .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 신청 건입니다: " + req.getRelatedRequestId()));
         }
 
         NotiLog noti = NotiLog.builder()
-                .channel(NotiChnl.valueOf(req.channel()))
+                .channel(NotiChnl.valueOf(req.getChannel()))
                 .targetUser(target)
                 .stdDmnReq(relatedReq)
-                .title(req.title())
-                .content(req.content())
+                .title(req.getTitle())
+                .content(req.getContent())
                 .build();
 
         return NotiLogRsp.from(notiLogRepository.save(noti));
@@ -65,15 +65,15 @@ public class NotiRptService {
 
     @Transactional
     public RptExpLogRsp recordReportExport(RptExpLogCreateReq req) {
-        AnlDset dset = anlDsetRepository.findById(req.datasetId())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.datasetId()));
-        AppUsr exporter = appUsrRepository.findById(req.exportedById())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + req.exportedById()));
+        AnlDset dset = anlDsetRepository.findById(req.getDatasetId())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.getDatasetId()));
+        AppUsr exporter = appUsrRepository.findById(req.getExportedById())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + req.getExportedById()));
 
         RptExpLog exp = RptExpLog.builder()
                 .anlDset(dset)
                 .exportedBy(exporter)
-                .fileName(req.fileName())
+                .fileName(req.getFileName())
                 .build();
 
         return RptExpLogRsp.from(rptExpLogRepository.save(exp));

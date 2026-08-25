@@ -39,14 +39,14 @@ public class AnlDsetColService {
         AnlDset dset = AnlDset.builder()
                 .datasetId(bizIdGenerator.nextDatasetId())
                 .requestNo(bizIdGenerator.nextRequestNo())
-                .datasetName(req.datasetName())
-                .dbSchemaName(req.dbSchemaName())
-                .tableName(req.tableName())
+                .datasetName(req.getDatasetName())
+                .dbSchemaName(req.getDbSchemaName())
+                .tableName(req.getTableName())
                 .requestedBy(requester)
                 .build();
 
-        if (req.dbmsTypeCode() != null && !req.dbmsTypeCode().isBlank()) {
-            dset.setDbmsTypeCode(req.dbmsTypeCode());
+        if (req.getDbmsTypeCode() != null && !req.getDbmsTypeCode().isBlank()) {
+            dset.setDbmsTypeCode(req.getDbmsTypeCode());
         }
 
         return AnlDsetRsp.from(anlDsetRepository.save(dset));
@@ -64,10 +64,10 @@ public class AnlDsetColService {
 
     @Transactional
     public List<AnlColRsp> createColumnsBulk(AnlColBulkCreateReq req) {
-        AnlDset dset = anlDsetRepository.findById(req.datasetId())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.datasetId()));
+        AnlDset dset = anlDsetRepository.findById(req.getDatasetId())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.getDatasetId()));
 
-        List<AnlCol> columns = req.columns().stream()
+        List<AnlCol> columns = req.getColumns().stream()
                 .map(c -> toEntity(dset, c))
                 .toList();
 
@@ -81,15 +81,15 @@ public class AnlDsetColService {
     private AnlCol toEntity(AnlDset dset, AnlColCreateReq c) {
         return AnlCol.builder()
                 .anlDset(dset)
-                .columnName(c.columnName())
-                .columnNameKo(c.columnNameKo())
-                .columnNameEn(c.columnNameEn())
-                .dataType(c.dataType())
-                .dataLength(c.dataLength())
-                .dataScale(c.dataScale())
-                .numericYn(Boolean.TRUE.equals(c.numericYn()))
-                .dateYn(Boolean.TRUE.equals(c.dateYn()))
-                .uniqueYn(Boolean.TRUE.equals(c.uniqueYn()))
+                .columnName(c.getColumnName())
+                .columnNameKo(c.getColumnNameKo())
+                .columnNameEn(c.getColumnNameEn())
+                .dataType(c.getDataType())
+                .dataLength(c.getDataLength())
+                .dataScale(c.getDataScale())
+                .numericYn(Boolean.TRUE.equals(c.getNumericYn()))
+                .dateYn(Boolean.TRUE.equals(c.getDateYn()))
+                .uniqueYn(Boolean.TRUE.equals(c.getUniqueYn()))
                 .build();
     }
 }

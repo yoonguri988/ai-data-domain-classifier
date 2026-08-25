@@ -37,17 +37,17 @@ public class StdDmnService {
 
     @Transactional
     public StdDmnReqRsp applyRequest(StdDmnReqCreateReq req, Long requesterId) {
-        AnlCol col = anlColRepository.findById(req.columnId())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 컬럼입니다: " + req.columnId()));
-        DmnCd domain = dmnCdRepository.findById(req.proposedDomainCode())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 도메인 코드입니다: " + req.proposedDomainCode()));
+        AnlCol col = anlColRepository.findById(req.getColumnId())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 컬럼입니다: " + req.getColumnId()));
+        DmnCd domain = dmnCdRepository.findById(req.getProposedDomainCode())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 도메인 코드입니다: " + req.getProposedDomainCode()));
         AppUsr requester = appUsrRepository.findById(requesterId)
                 .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + requesterId));
 
         StdDmnReq entity = StdDmnReq.builder()
                 .anlCol(col)
                 .proposedDmnCd(domain)
-                .aiSuggestedYn(Boolean.TRUE.equals(req.aiSuggestedYn()))
+                .aiSuggestedYn(Boolean.TRUE.equals(req.getAiSuggestedYn()))
                 .requestedBy(requester)
                 .build();
 
@@ -78,12 +78,12 @@ public class StdDmnService {
         entity.setReviewedBy(reviewer);
         entity.setReviewedAt(LocalDateTime.now());
 
-        if (Boolean.TRUE.equals(req.approve())) {
+        if (Boolean.TRUE.equals(req.getApprove())) {
             entity.setRequestStatus(ReqStatCd.APPROVED);
             confirmDomain(entity, reviewer);
         } else {
             entity.setRequestStatus(ReqStatCd.REJECTED);
-            entity.setRejectReason(req.rejectReason());
+            entity.setRejectReason(req.getRejectReason());
         }
 
         return StdDmnReqRsp.from(entity);

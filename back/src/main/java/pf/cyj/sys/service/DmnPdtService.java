@@ -35,20 +35,20 @@ public class DmnPdtService {
 
     @Transactional
     public DmnPdtRsp savePrediction(DmnPdtCreateReq req) {
-        AnlCol col = anlColRepository.findById(req.columnId())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 컬럼입니다: " + req.columnId()));
-        DmnCd domain = dmnCdRepository.findById(req.domainCode())
-                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 도메인 코드입니다: " + req.domainCode()));
+        AnlCol col = anlColRepository.findById(req.getColumnId())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 컬럼입니다: " + req.getColumnId()));
+        DmnCd domain = dmnCdRepository.findById(req.getDomainCode())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 도메인 코드입니다: " + req.getDomainCode()));
 
         DmnPdt pdt = DmnPdt.builder()
                 .anlCol(col)
                 .dmnCd(domain)
-                .predictionRank(req.predictionRank())
-                .probability(req.probability())
-                .aiModelName(req.aiModelName())
-                .aiModelVersion(req.aiModelVersion())
-                .responseMs(req.responseMs())
-                .cacheHitYn(Boolean.TRUE.equals(req.cacheHitYn()))
+                .predictionRank(req.getPredictionRank())
+                .probability(req.getProbability())
+                .aiModelName(req.getAiModelName())
+                .aiModelVersion(req.getAiModelVersion())
+                .responseMs(req.getResponseMs())
+                .cacheHitYn(Boolean.TRUE.equals(req.getCacheHitYn()))
                 .build();
 
         return DmnPdtRsp.from(dmnPdtRepository.save(pdt));
