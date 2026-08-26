@@ -1,0 +1,137 @@
+package pf.cyj.sys.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pf.cyj.sys.dto.request.AnlJobCreateReq;
+import pf.cyj.sys.dto.response.AnlJobLogRsp;
+import pf.cyj.sys.dto.response.AnlJobRsp;
+import pf.cyj.sys.entity.AnlDset;
+import pf.cyj.sys.entity.AnlJob;
+import pf.cyj.sys.entity.AnlJobLog;
+import pf.cyj.sys.entity.AppUsr;
+import pf.cyj.sys.entity.type.ExecStatCd;
+import pf.cyj.sys.entity.type.JobStatCd;
+import pf.cyj.sys.entity.type.SchdTypCd;
+import pf.cyj.sys.exception.ResourceNotFoundException;
+import pf.cyj.sys.repository.AnlDsetRepository;
+import pf.cyj.sys.repository.AnlJobLogRepository;
+import pf.cyj.sys.repository.AnlJobRepository;
+import pf.cyj.sys.repository.AppUsrRepository;
+
+/**
+ * 배치작업 - 분석/재판별 배치 등록 및 실행 이력 관리.
+ * startExecution/completeExecution/failExecution 은 이후 구현할 템플릿 메서드 기반 배치 실행기
+ * (AbstractAnlJobExecutor)가 호출하는 내부용 API 로, 외부에 공개 REST 요청으로는 노출하지 않는다.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class AnlJobService {
+
+    private final AppUsrRepository appUsrRepository;
+    private final AnlDsetRepository anlDsetRepository;
+    private final AnlJobRepository anlJobRepository;
+    private final AnlJobLogRepository anlJobLogRepository;
+
+    /** 배치작업을 신규 등록한다(등록 시 상태는 READY). */
+    @Transactional
+    public AnlJobRsp createJob(AnlJobCreateReq req, Long creatorId) {
+        AppUsr creator = appUsrRepository.findById(creatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + creatorId));
+
+        AnlDset dset = null;
+        if (req.getDatasetId() != null && !req.getDatasetId().isBlank()) {
+            dset = anlDsetRepository.findById(req.getDatasetId())
+                    .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + req.getDatasetId()));
+        }
+
+        AnlJob job = AnlJob.builder()
+                .jobName(req.getJobName())
+                .anlDset(dset)
+                .createdBy(creator)
+                .cronExpr(req.getCronExpr())
+                .build();
+
+        if (req.getJobType() != null && !req.getJobType().isBlank()) {
+            job.setJobType(req.getJobType());
+        }
+        if (req.getScheduleType() != null && !req.getScheduleType().isBlank()) {
+            job.setScheduleType(SchdTypCd.valueOf(req.getScheduleType()));
+        }
+
+        return AnlJobRsp.from(anlJobRepository.save(job));
+    }
+
+    /** 실행 상태(READY/RUNNING/SUCCESS/FAILED/DISABLED)별 배치작업 목록을 조회한다. */
+    public List<AnlJobRsp> findJobsByStatus(JobStatCd status) {
+        return anlJobRepository.findByJobStatus(status).stream().map(AnlJobRsp::from).toList();
+    }
+
+    /** 특정 데이터셋에 등록된 배치작업 목록을 조회한다. */
+    public List<AnlJobRsp> findJobsByDataset(String datasetId) {
+        return anlJobRepository.findByAnlDset_DatasetId(datasetId).stream().map(AnlJobRsp::from).toList();
+    }
+
+    /** 특정 배치작업의 실행 이력(시작/완료/실패)을 최신순으로 조회한다. */
+    public List<AnlJobLogRsp> findLogsByJob(Long jobId) {
+        return anlJobLogRepository.findByAnlJob_JobIdOrderByLogIdDesc(jobId).stream().map(AnlJobLogRsp::from).toList();
+    }
+
+    /** 배치작업 실행을 시작한다 - 작업 상태를 RUNNING 으로 바꾸고 실행 이력을 1건 생성한다. */
+    @Transactional
+    public AnlJobLogRsp startExecution(Long jobId, Long executorId) {
+        AnlJob job = anlJobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 작업입니다: " + jobId));
+
+        job.setJobStatus(JobStatCd.RUNNING);
+
+        AppUsr executor = executorId != null ? appUsrRepository.findById(executorId).orElse(null) : null;
+
+        AnlJobLog log = anlJobLogRepository.save(
+                AnlJobLog.builder()
+                        .anlJob(job)
+                        .execStatus(ExecStatCd.RUNNING)
+                        .startedAt(LocalDateTime.now())
+                        .executedBy(executor)
+                        .build()
+        );
+
+        return AnlJobLogRsp.from(log);
+    }
+
+    /** 배치작업 실행을 성공으로 종료 처리한다 - 실행 이력을 SUCCESS 로 마감하고 작업 상태도 SUCCESS 로 갱신한다. */
+    @Transactional
+    public AnlJobLogRsp completeExecution(Long logId, int successCount, int failCount) {
+        AnlJobLog log = anlJobLogRepository.findById(logId)
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 실행 이력입니다: " + logId));
+
+        log.setExecStatus(ExecStatCd.SUCCESS);
+        log.setEndedAt(LocalDateTime.now());
+        log.setSuccessCount(successCount);
+        log.setFailCount(failCount);
+        log.getAnlJob().setJobStatus(JobStatCd.SUCCESS);
+
+        return AnlJobLogRsp.from(log);
+    }
+
+    /** 배치작업 실행을 실패로 종료 처리한다 - errorType 은 INTERNAL_ERROR(내부 로직 오류) 또는 CALL_ERROR(외부 API 호출 실패)만 허용된다. */
+    @Transactional
+    public AnlJobLogRsp failExecution(Long logId, ExecStatCd errorType, String errorMessage) {
+        if (errorType != ExecStatCd.INTERNAL_ERROR && errorType != ExecStatCd.CALL_ERROR) {
+            throw new IllegalArgumentException("실패 상태는 INTERNAL_ERROR 또는 CALL_ERROR 만 허용됩니다: " + errorType);
+        }
+
+        AnlJobLog log = anlJobLogRepository.findById(logId)
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 실행 이력입니다: " + logId));
+
+        log.setExecStatus(errorType);
+        log.setEndedAt(LocalDateTime.now());
+        log.setErrorMessage(errorMessage);
+        log.getAnlJob().setJobStatus(JobStatCd.FAILED);
+
+        return AnlJobLogRsp.from(log);
+    }
+}
