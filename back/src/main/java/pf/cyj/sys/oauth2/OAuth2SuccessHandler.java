@@ -21,9 +21,22 @@ import pf.cyj.sys.service.AuthAcntService;
 
 /**
  * Google/Kakao/Naver OAuth2 로그인 성공 핸들러.
- * 계정 연결/생성 + Access/Refresh Token 발급 + Refresh Token 저장(Redis/감사이력)은 전부
- * {@link AuthAcntService#loginWithOAuth} 가 담당한다 — 로컬 아이디/비밀번호 로그인과 완전히 같은 토큰
- * 발급 경로를 재사용해서 두 흐름의 토큰 정책(만료시간, roles 클레임 등)이 어긋나지 않게 한다.
+ *
+ * <p>동작 흐름(처음 보는 사람을 위한 요약):
+ * <ol>
+ *   <li>사용자가 "/oauth2/authorization/{google|kakao|naver}" 로 이동하면 Spring Security 가
+ *       해당 공급자의 로그인 화면으로 리다이렉트한다.</li>
+ *   <li>사용자가 로그인/동의를 마치면 공급자가 "/login/oauth2/code/{provider}" 로 콜백을 보내고,
+ *       Spring Security 가 이 콜백을 처리해 인증에 성공하면 이 핸들러(onAuthenticationSuccess)가 호출된다.</li>
+ *   <li>공급자마다 사용자 정보(attributes)의 모양이 달라서 {@link UserInfoOAuth2} 구현체
+ *       ({@link UserInfoGoogle}/{@link UserInfoKakao}/{@link UserInfoNaver})로 공통 형태로 변환한다.</li>
+ *   <li>계정 연결/생성 + Access/Refresh Token 발급 + Refresh Token 저장(Redis/감사이력)은 전부
+ *       {@link AuthAcntService#loginWithOAuth} 가 담당한다 - 로컬 아이디/비밀번호 로그인과 완전히 같은
+ *       토큰 발급 경로를 재사용해서 두 흐름의 토큰 정책(만료시간, roles 클레임 등)이 어긋나지 않게 한다.</li>
+ *   <li>Refresh Token 은 HttpOnly refreshToken 쿠키로 내려주고(AuthAcntController 의 로그인/재발급과
+ *       동일한 방식), Access Token 은 프론트엔드 리다이렉트 URL 뒤에 쿼리스트링(?accessToken=...)으로
+ *       실어 보낸다 - 리다이렉트라서 응답 바디를 못 쓰기 때문이다.</li>
+ * </ol>
  */
 @Component
 @RequiredArgsConstructor
@@ -59,7 +72,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         LoginRsp loginRsp = authAcntService.loginWithOAuth(
                 userInfo.getProvider(), userInfo.getProviderId(), userInfo.getEmail(), userInfo.getNickname());
 
-        // refreshToken 을 쿠키로 설정
+        // refreshToken 을 쿠키로 설정 (AuthAcntController 의 login/reissue 와 동일한 옵션)
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", loginRsp.getRefreshToken())
                 .httpOnly(true)
                 .secure(true)
