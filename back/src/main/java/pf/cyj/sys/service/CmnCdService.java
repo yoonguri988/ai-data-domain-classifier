@@ -23,6 +23,7 @@ public class CmnCdService {
     private final CmnCdGrpRepository cmnCdGrpRepository;
     private final CmnCdRepository cmnCdRepository;
 
+    /** 공통코드 그룹을 등록하거나, 이미 존재하면 그룹명만 갱신한다(upsert). */
     @Transactional
     public CmnCdGrpRsp saveGrp(CmnCdGrpSaveReq req) {
         CmnCdGrp grp = cmnCdGrpRepository.findById(req.getCodeGroup())
@@ -38,10 +39,12 @@ public class CmnCdService {
         return CmnCdGrpRsp.from(cmnCdGrpRepository.save(grp));
     }
 
+    /** 등록된 모든 공통코드 그룹을 조회한다. */
     public List<CmnCdGrpRsp> findAllGrp() {
         return cmnCdGrpRepository.findAll().stream().map(CmnCdGrpRsp::from).toList();
     }
 
+    /** 공통코드 상세를 등록하거나, (codeGroup, codeValue) 가 이미 존재하면 나머지 값만 갱신한다(upsert). */
     @Transactional
     public CmnCdRsp saveCd(CmnCdSaveReq req) {
         CmnCdId id = new CmnCdId(req.getCodeGroup(), req.getCodeValue());
@@ -64,6 +67,7 @@ public class CmnCdService {
         return CmnCdRsp.from(cmnCdRepository.save(cd));
     }
 
+    /** 그룹별 공통코드 상세를 정렬순서 오름차순으로 조회한다. useOnly=true 면 사용중(useYn=true)인 코드만 걸러서 반환한다. */
     public List<CmnCdRsp> findCdByGrp(String codeGroup, boolean useOnly) {
         List<CmnCd> list = useOnly
                 ? cmnCdRepository.findByCodeGroupAndUseYnTrueOrderBySortOrderAsc(codeGroup)

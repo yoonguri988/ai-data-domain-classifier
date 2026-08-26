@@ -36,6 +36,7 @@ public class AnlJobService {
     private final AnlJobRepository anlJobRepository;
     private final AnlJobLogRepository anlJobLogRepository;
 
+    /** 배치작업을 신규 등록한다(등록 시 상태는 READY). */
     @Transactional
     public AnlJobRsp createJob(AnlJobCreateReq req, Long creatorId) {
         AppUsr creator = appUsrRepository.findById(creatorId)
@@ -64,18 +65,22 @@ public class AnlJobService {
         return AnlJobRsp.from(anlJobRepository.save(job));
     }
 
+    /** 실행 상태(READY/RUNNING/SUCCESS/FAILED/DISABLED)별 배치작업 목록을 조회한다. */
     public List<AnlJobRsp> findJobsByStatus(JobStatCd status) {
         return anlJobRepository.findByJobStatus(status).stream().map(AnlJobRsp::from).toList();
     }
 
+    /** 특정 데이터셋에 등록된 배치작업 목록을 조회한다. */
     public List<AnlJobRsp> findJobsByDataset(String datasetId) {
         return anlJobRepository.findByAnlDset_DatasetId(datasetId).stream().map(AnlJobRsp::from).toList();
     }
 
+    /** 특정 배치작업의 실행 이력(시작/완료/실패)을 최신순으로 조회한다. */
     public List<AnlJobLogRsp> findLogsByJob(Long jobId) {
         return anlJobLogRepository.findByAnlJob_JobIdOrderByLogIdDesc(jobId).stream().map(AnlJobLogRsp::from).toList();
     }
 
+    /** 배치작업 실행을 시작한다 - 작업 상태를 RUNNING 으로 바꾸고 실행 이력을 1건 생성한다. */
     @Transactional
     public AnlJobLogRsp startExecution(Long jobId, Long executorId) {
         AnlJob job = anlJobRepository.findById(jobId)
@@ -97,6 +102,7 @@ public class AnlJobService {
         return AnlJobLogRsp.from(log);
     }
 
+    /** 배치작업 실행을 성공으로 종료 처리한다 - 실행 이력을 SUCCESS 로 마감하고 작업 상태도 SUCCESS 로 갱신한다. */
     @Transactional
     public AnlJobLogRsp completeExecution(Long logId, int successCount, int failCount) {
         AnlJobLog log = anlJobLogRepository.findById(logId)
@@ -111,6 +117,7 @@ public class AnlJobService {
         return AnlJobLogRsp.from(log);
     }
 
+    /** 배치작업 실행을 실패로 종료 처리한다 - errorType 은 INTERNAL_ERROR(내부 로직 오류) 또는 CALL_ERROR(외부 API 호출 실패)만 허용된다. */
     @Transactional
     public AnlJobLogRsp failExecution(Long logId, ExecStatCd errorType, String errorMessage) {
         if (errorType != ExecStatCd.INTERNAL_ERROR && errorType != ExecStatCd.CALL_ERROR) {

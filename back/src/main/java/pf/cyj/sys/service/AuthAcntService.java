@@ -35,9 +35,9 @@ import pf.cyj.sys.security.TokenStore;
 /**
  * 인증/계정 - 회원가입, 로그인, Google/Kakao/Naver OAuth2 로그인, Access/Refresh Token 발급·재발급, 로그아웃.
  * Refresh Token 은 TokenStore(Redis) 를 1차 저장소(TTL)로 사용하고, REFRESH_TOKEN 테이블에는
- * SHA-256 해시로 감사이력만 남긴다. LoginRsp.refreshToken() 은 {@code @JsonIgnore} 라 응답 JSON 에는
- * 안 실리고, Controller/OAuth2SuccessHandler 가 이 값을 그대로 꺼내 HttpOnly 쿠키로 내려보낸다
- * (쿠키 기반 Refresh Token 흐름).
+ * SHA-256 해시로 감사이력만 남긴다. {@code LoginRsp.refreshToken} 필드는 {@code @JsonIgnore} 라 응답
+ * JSON 에는 안 실리고, Controller/OAuth2SuccessHandler 가 {@code loginRsp.getRefreshToken()} 으로 값만
+ * 꺼내 HttpOnly 쿠키로 내려보낸다(쿠키 기반 Refresh Token 흐름).
  */
 @Service
 @RequiredArgsConstructor
@@ -55,6 +55,7 @@ public class AuthAcntService {
     private final JwtProvider jwtProvider;
     private final TokenStore tokenStore;
 
+    /** 회원가입 - 로그인 아이디/이메일 중복 체크 후 비밀번호를 인코딩해 저장하고, ROLE_USER 를 기본 부여한다. */
     @Transactional
     public UsrRsp signup(SignupReq req) {
         if (appUsrRepository.existsByLoginId(req.getLoginId())) {
@@ -80,6 +81,7 @@ public class AuthAcntService {
         return UsrRsp.from(usr);
     }
 
+    /** 아이디/비밀번호 로그인 - 자격 증명과 계정 상태(ACTIVE)를 검증한 뒤 토큰을 발급한다. */
     @Transactional
     public LoginRsp login(LoginReq req) {
         AppUsr usr = appUsrRepository.findByLoginId(req.getLoginId())
@@ -144,6 +146,7 @@ public class AuthAcntService {
         return issueTokens(usr);
     }
 
+    /** 로그아웃 - Redis 에 저장된 Refresh Token 을 삭제하고 감사이력(REFRESH_TOKEN)에 폐기 처리한다. */
     @Transactional
     public void logout(Long userId) {
         String stored = tokenStore.getRefreshToken(userId);

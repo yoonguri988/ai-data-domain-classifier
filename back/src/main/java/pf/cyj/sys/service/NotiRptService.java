@@ -37,6 +37,7 @@ public class NotiRptService {
     private final NotiLogRepository notiLogRepository;
     private final RptExpLogRepository rptExpLogRepository;
 
+    /** 알림 발송 이력 1건을 기록한다(실제 발송 연동은 아직 붙어있지 않고, 이력만 남긴다). */
     @Transactional
     public NotiLogRsp recordNotification(NotiLogCreateReq req) {
         AppUsr target = appUsrRepository.findById(req.getTargetUserId())
@@ -59,10 +60,12 @@ public class NotiRptService {
         return NotiLogRsp.from(notiLogRepository.save(noti));
     }
 
+    /** 특정 사용자에게 발송된 알림 이력을 최신순으로 조회한다. */
     public List<NotiLogRsp> findNotificationsByUser(Long userId) {
         return notiLogRepository.findByTargetUser_UserIdOrderBySentAtDesc(userId).stream().map(NotiLogRsp::from).toList();
     }
 
+    /** 리포트 출력 이력 1건을 기록한다(실제 PDF 생성 연동은 아직 붙어있지 않고, 이력만 남긴다). */
     @Transactional
     public RptExpLogRsp recordReportExport(RptExpLogCreateReq req) {
         AnlDset dset = anlDsetRepository.findById(req.getDatasetId())
@@ -79,6 +82,7 @@ public class NotiRptService {
         return RptExpLogRsp.from(rptExpLogRepository.save(exp));
     }
 
+    /** 특정 데이터셋에 대해 기록된 리포트 출력 이력을 최신순으로 조회한다. */
     public List<RptExpLogRsp> findReportsByDataset(String datasetId) {
         return rptExpLogRepository.findByAnlDset_DatasetIdOrderByExportedAtDesc(datasetId)
                 .stream().map(RptExpLogRsp::from).toList();

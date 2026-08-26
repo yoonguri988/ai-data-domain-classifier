@@ -31,6 +31,7 @@ public class AnlDsetColService {
     private final AnlColRepository anlColRepository;
     private final BizIdGenerator bizIdGenerator;
 
+    /** 데이터셋을 신규 등록한다. datasetId/requestNo(업무키)는 BizIdGenerator 가 자동 채번한다. */
     @Transactional
     public AnlDsetRsp createDset(AnlDsetCreateReq req, Long requesterId) {
         AppUsr requester = appUsrRepository.findById(requesterId)
@@ -52,16 +53,19 @@ public class AnlDsetColService {
         return AnlDsetRsp.from(anlDsetRepository.save(dset));
     }
 
+    /** 데이터셋 ID(업무키)로 단건 조회한다. */
     public AnlDsetRsp findDsetById(String datasetId) {
         return anlDsetRepository.findById(datasetId)
                 .map(AnlDsetRsp::from)
                 .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + datasetId));
     }
 
+    /** 특정 사용자가 등록 요청한 데이터셋 목록을 조회한다. */
     public List<AnlDsetRsp> findDsetByRequester(Long requesterId) {
         return anlDsetRepository.findByRequestedBy_UserId(requesterId).stream().map(AnlDsetRsp::from).toList();
     }
 
+    /** 한 데이터셋에 속한 컬럼 메타데이터를 한 번에 여러 건 등록한다(테이블 메타 스캔 결과 저장용). */
     @Transactional
     public List<AnlColRsp> createColumnsBulk(AnlColBulkCreateReq req) {
         AnlDset dset = anlDsetRepository.findById(req.getDatasetId())
@@ -74,6 +78,7 @@ public class AnlDsetColService {
         return anlColRepository.saveAll(columns).stream().map(AnlColRsp::from).toList();
     }
 
+    /** 데이터셋에 등록된 컬럼 메타 목록을 조회한다. */
     public List<AnlColRsp> findColumnsByDataset(String datasetId) {
         return anlColRepository.findByAnlDset_DatasetId(datasetId).stream().map(AnlColRsp::from).toList();
     }

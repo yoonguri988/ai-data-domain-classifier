@@ -35,6 +35,7 @@ public class StdDmnService {
     private final StdDmnReqRepository stdDmnReqRepository;
     private final StdDmnRepository stdDmnRepository;
 
+    /** 표준 도메인 확정을 신청한다(상태는 PENDING 으로 시작해 관리자 승인/반려를 기다린다). */
     @Transactional
     public StdDmnReqRsp applyRequest(StdDmnReqCreateReq req, Long requesterId) {
         AnlCol col = anlColRepository.findById(req.getColumnId())
@@ -54,15 +55,18 @@ public class StdDmnService {
         return StdDmnReqRsp.from(stdDmnReqRepository.save(entity));
     }
 
+    /** 아직 승인/반려 처리되지 않은(PENDING) 확정 신청 목록을 조회한다. */
     public List<StdDmnReqRsp> findPendingRequests() {
         return stdDmnReqRepository.findByRequestStatusOrderByRequestedAtAsc(ReqStatCd.PENDING)
                 .stream().map(StdDmnReqRsp::from).toList();
     }
 
+    /** 특정 사용자가 신청한 확정 요청 이력을 조회한다. */
     public List<StdDmnReqRsp> findRequestsByRequester(Long requesterId) {
         return stdDmnReqRepository.findByRequestedBy_UserId(requesterId).stream().map(StdDmnReqRsp::from).toList();
     }
 
+    /** 대기중인 확정 신청을 승인 또는 반려 처리한다. 승인 시 표준 도메인 확정본(StdDmn)이 생성/갱신된다. */
     @Transactional
     public StdDmnReqRsp review(Long requestId, StdDmnReqReviewReq req, Long reviewerId) {
         StdDmnReq entity = stdDmnReqRepository.findById(requestId)
@@ -89,6 +93,7 @@ public class StdDmnService {
         return StdDmnReqRsp.from(entity);
     }
 
+    /** 컬럼에 확정된 표준 도메인(확정본)을 조회한다. */
     public StdDmnRsp findConfirmedByColumn(Long columnId) {
         return stdDmnRepository.findByAnlCol_ColumnId(columnId)
                 .map(StdDmnRsp::from)

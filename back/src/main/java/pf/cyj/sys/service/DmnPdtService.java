@@ -29,10 +29,12 @@ public class DmnPdtService {
     private final DmnCdRepository dmnCdRepository;
     private final DmnPdtRepository dmnPdtRepository;
 
+    /** 표준 도메인 후보 마스터 전체를 정렬순서 오름차순으로 조회한다(화면 선택 콤보박스용). */
     public List<DmnCdRsp> findAllDomains() {
         return dmnCdRepository.findAllByOrderBySortOrderAsc().stream().map(DmnCdRsp::from).toList();
     }
 
+    /** 이미 계산된 AI 판별 결과 1건을 저장한다(외부 AI API 호출 자체는 아직 이 Service 에 붙어있지 않다). */
     @Transactional
     public DmnPdtRsp savePrediction(DmnPdtCreateReq req) {
         AnlCol col = anlColRepository.findById(req.getColumnId())
@@ -54,6 +56,7 @@ public class DmnPdtService {
         return DmnPdtRsp.from(dmnPdtRepository.save(pdt));
     }
 
+    /** 컬럼별 AI 판별 결과를 추천순위(predictionRank) 오름차순으로 조회한다(Top-N). */
     public List<DmnPdtRsp> findPredictionsByColumn(Long columnId) {
         return dmnPdtRepository.findByAnlCol_ColumnIdOrderByPredictionRankAsc(columnId)
                 .stream().map(DmnPdtRsp::from).toList();
