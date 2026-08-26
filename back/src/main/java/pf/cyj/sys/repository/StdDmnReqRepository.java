@@ -6,6 +6,7 @@ import pf.cyj.sys.entity.StdDmnReq;
 import pf.cyj.sys.entity.type.ReqStatCd;
 
 /** STANDARD_DOMAIN_REQUEST - 담당자 승인 대기열 조회 */
+/** 표준 도메인 확정 신청본(STANDARD_DOMAIN_REQUEST) - 대기중 신청 목록, 신청자별 이력 조회 */
 public interface StdDmnReqRepository extends JpaRepository<StdDmnReq, Long> {
 
     List<StdDmnReq> findByRequestStatusOrderByRequestedAtAsc(ReqStatCd requestStatus);
