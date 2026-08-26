@@ -26,7 +26,7 @@ public class DmnPdtCreateReq {
     @NotNull(message = "컬럼 ID는 필수입니다.")
     private Long columnId;
 
-    @Schema(description = "추천된 표준 도메인 코드", example = "DOM_PHONE")
+    @Schema(description = "추천된 표준 도메인 코드", example = "CONTACT")
     @NotBlank(message = "도메인 코드는 필수입니다.")
     private String domainCode;
 

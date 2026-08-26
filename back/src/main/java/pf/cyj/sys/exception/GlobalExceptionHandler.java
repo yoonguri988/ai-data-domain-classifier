@@ -37,6 +37,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody("FORBIDDEN", ex.getMessage()));
     }
 
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<Map<String, String>> handleExternalApi(ExternalApiException ex) {
+        // 우리 코드 문제가 아니라 외부 AI API 쪽 문제라는 걸 로그에서 바로 구분할 수 있도록 warn 으로 남긴다.
+        log.warn("[GlobalExceptionHandler] 외부 AI API 연동 실패: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(errorBody(ex.getErrorCode(), ex.getMessage()));
+    }
+
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody(null, ex.getMessage()));

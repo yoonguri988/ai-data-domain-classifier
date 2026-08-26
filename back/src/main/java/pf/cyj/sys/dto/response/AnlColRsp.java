@@ -18,7 +18,7 @@ public class AnlColRsp {
     @Schema(description = "컬럼 ID", example = "1")
     private Long columnId;
 
-    @Schema(description = "이 컬럼이 속한 데이터셋 ID", example = "DS_00000001")
+    @Schema(description = "이 컬럼이 속한 데이터셋 ID", example = "DS0000000001")
     private String datasetId;
 
     @Schema(description = "컬럼명 (실제 DB 컬럼명)", example = "PHONE_NO")

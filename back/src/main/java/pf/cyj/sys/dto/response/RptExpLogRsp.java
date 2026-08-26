@@ -18,7 +18,7 @@ public class RptExpLogRsp {
     @Schema(description = "출력 이력 ID", example = "1")
     private Long exportId;
 
-    @Schema(description = "출력한 데이터셋 ID", example = "DS_00000001")
+    @Schema(description = "출력한 데이터셋 ID", example = "DS0000000001")
     private String datasetId;
 
     @Schema(description = "출력된 파일명", example = "domain-prediction-report.pdf")

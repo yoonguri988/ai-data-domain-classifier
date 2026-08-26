@@ -17,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AnlColBulkCreateReq {
 
-    @Schema(description = "컬럼을 등록할 데이터셋 ID (AnlDsetCreateReq 로 등록 후 응답에서 받은 값)", example = "DS_00000001")
+    @Schema(description = "컬럼을 등록할 데이터셋 ID (AnlDsetCreateReq 로 등록 후 응답에서 받은 값)", example = "DS0000000001")
     @NotBlank(message = "데이터셋 ID는 필수입니다.")
     private String datasetId;
 

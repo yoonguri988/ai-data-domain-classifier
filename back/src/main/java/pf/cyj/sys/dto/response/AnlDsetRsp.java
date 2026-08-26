@@ -16,7 +16,7 @@ import pf.cyj.sys.entity.type.DsetStatCd;
 @AllArgsConstructor
 public class AnlDsetRsp {
 
-    @Schema(description = "데이터셋 ID (업무키, BizIdGenerator 채번)", example = "DS_00000001")
+    @Schema(description = "데이터셋 ID (업무키, BizIdGenerator 채번)", example = "DS0000000001")
     private String datasetId;
 
     @Schema(description = "요청번호 (업무키, BizIdGenerator 채번)", example = "RQ_00000001")

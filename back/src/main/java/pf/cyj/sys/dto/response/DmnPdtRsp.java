@@ -25,10 +25,10 @@ public class DmnPdtRsp {
     @Schema(description = "판별 대상 컬럼명", example = "PHONE_NO")
     private String columnName;
 
-    @Schema(description = "추천된 표준 도메인 코드", example = "DOM_PHONE")
+    @Schema(description = "추천된 표준 도메인 코드", example = "CONTACT")
     private String domainCode;
 
-    @Schema(description = "추천된 표준 도메인 한글명", example = "전화번호")
+    @Schema(description = "추천된 표준 도메인 한글명", example = "연락처")
     private String domainNameKo;
 
     @Schema(description = "추천 순위 (1이 가장 유력)", example = "1")

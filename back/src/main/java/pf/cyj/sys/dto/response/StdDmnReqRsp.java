@@ -25,10 +25,10 @@ public class StdDmnReqRsp {
     @Schema(description = "신청 대상 컬럼명", example = "PHONE_NO")
     private String columnName;
 
-    @Schema(description = "제안한 표준 도메인 코드", example = "DOM_PHONE")
+    @Schema(description = "제안한 표준 도메인 코드", example = "CONTACT")
     private String proposedDomainCode;
 
-    @Schema(description = "제안한 표준 도메인 한글명", example = "전화번호")
+    @Schema(description = "제안한 표준 도메인 한글명", example = "연락처")
     private String proposedDomainNameKo;
 
     @Schema(description = "AI 추천 결과를 그대로 채택했는지 여부", example = "true")

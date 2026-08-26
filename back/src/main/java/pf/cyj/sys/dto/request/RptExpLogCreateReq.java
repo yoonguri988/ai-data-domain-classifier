@@ -19,7 +19,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RptExpLogCreateReq {
 
-    @Schema(description = "리포트를 출력한 데이터셋 ID", example = "DS_00000001")
+    @Schema(description = "리포트를 출력한 데이터셋 ID", example = "DS0000000001")
     @NotBlank(message = "데이터셋 ID는 필수입니다.")
     private String datasetId;
 
