@@ -24,7 +24,7 @@ import pf.cyj.sys.service.NotiRptService;
 
 /**
  * 알림/리포트 - 발송/출력 이력 기록 및 조회. 전부 로그인이 필요하다.
- * 조회는 본인 이력만 노출한다(findNotificationsByUser 를 ActorContext.userId() 로만 호출 —
+ * 조회는 본인 이력만 노출한다(findNotificationsByUser 를 ActorContext 의 getUserId() 로만 호출 -
  * 다른 사용자 ID 를 파라미터로 받지 않아 IDOR 을 원천 차단). 실제 발송(coolsms/mail)과
  * PDF 생성(PDFBox)은 NotiRptService 문서와 동일하게 외부 연동 단계에서 붙는다.
  */
@@ -41,7 +41,7 @@ public class NotiRptController {
         return ResponseEntity.status(HttpStatus.CREATED).body(notiRptService.recordNotification(req));
     }
 
-    @Operation(summary = "내 알림 이력 조회", description = "현재 로그인한 사용자에게 발송된 알림 이력만 조회한다(IDOR 방지를 위해 다른 사용자 ID 는 파라미터로 받지 않는다).")
+    @Operation(summary = "내 알림 이력 조회", description = "현재 로그인한 사용자에게 발송된 알림 이력만 최신순으로 조회한다(IDOR 방지를 위해 다른 사용자 ID 는 파라미터로 받지 않는다).")
     @GetMapping("/api/notifications/mine")
     public ResponseEntity<List<NotiLogRsp>> findMyNotifications(@AuthenticationPrincipal CustomOAuth2User principal) {
         ActorContext actor = ActorContext.from(principal);
@@ -54,10 +54,11 @@ public class NotiRptController {
         return ResponseEntity.status(HttpStatus.CREATED).body(notiRptService.recordReportExport(req));
     }
 
-    @Operation(summary = "데이터셋별 리포트 출력 이력 조회", description = "지정한 데이터셋에 대해 기록된 리포트 출력 이력 목록을 조회한다.")
+    @Operation(summary = "데이터셋별 리포트 출력 이력 조회", description = "지정한 데이터셋에 대해 기록된 리포트 출력 이력 목록을 최신순으로 조회한다.")
     @GetMapping("/api/report-exports/dataset/{datasetId}")
     public ResponseEntity<List<RptExpLogRsp>> findReportsByDataset(
-            @Parameter(description = "데이터셋 ID") @PathVariable String datasetId) {
+            @Parameter(description = "데이터셋 ID", example = "DS_00000001")
+            @PathVariable String datasetId) {
         return ResponseEntity.ok(notiRptService.findReportsByDataset(datasetId));
     }
 }

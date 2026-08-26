@@ -37,7 +37,11 @@ public class DmnPdtController {
         return ResponseEntity.ok(dmnPdtService.findAllDomains());
     }
 
-    @Operation(summary = "AI 판별 결과 저장", description = "이미 계산된 컬럼별 도메인 판별 결과(순위/확률/AI 모델 정보)를 저장한다. 실제 외부 AI API 호출은 이 시점에는 수행하지 않는다.")
+    @Operation(
+            summary = "AI 판별 결과 저장",
+            description = "이미 계산된 컬럼별 도메인 판별 결과(순위/확률/AI 모델 정보)를 저장한다. "
+                    + "실제 외부 AI API 호출은 이 시점에는 수행하지 않는다 - 호출은 이미 완료됐다고 가정하고 그 결과값만 저장한다."
+    )
     @PostMapping("/api/domain-predictions")
     public ResponseEntity<DmnPdtRsp> savePrediction(@Valid @RequestBody DmnPdtCreateReq req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(dmnPdtService.savePrediction(req));
@@ -46,7 +50,8 @@ public class DmnPdtController {
     @Operation(summary = "컬럼별 판별 결과(Top-N) 조회", description = "지정한 컬럼에 대해 저장된 AI 판별 결과를 추천순위(predictionRank) 오름차순으로 조회한다.")
     @GetMapping("/api/domain-predictions/columns/{columnId}")
     public ResponseEntity<List<DmnPdtRsp>> findPredictionsByColumn(
-            @Parameter(description = "분석 컬럼 ID") @PathVariable Long columnId) {
+            @Parameter(description = "분석 컬럼 ID", example = "1")
+            @PathVariable(value="columnId") Long columnId) {
         return ResponseEntity.ok(dmnPdtService.findPredictionsByColumn(columnId));
     }
 }

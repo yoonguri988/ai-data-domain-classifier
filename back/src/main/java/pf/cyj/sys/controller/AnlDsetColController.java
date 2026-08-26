@@ -28,6 +28,9 @@ import pf.cyj.sys.service.AnlDsetColService;
  * (SecurityConfig 의 anyRequest().authenticated() 기본값을 그대로 따른다).
  * "/mine" 은 "/{datasetId}" 보다 먼저 선언하지 않아도 Spring 이 리터럴 경로를 변수 경로보다
  * 우선 매칭하므로 순서와 무관하게 정상 동작한다.
+ *
+ * <p>Swagger UI 테스트 순서 예시: (1) POST /api/datasets 로 데이터셋 등록 → 응답의 datasetId 확인
+ * → (2) POST /api/datasets/columns 요청 바디의 datasetId 에 그 값을 넣어 컬럼 등록.
  */
 @Tag(name = "AnalysisTarget", description = "분석대상 - 데이터셋/컬럼 메타 등록 및 조회 (로그인 필요)")
 @RestController
@@ -37,7 +40,11 @@ public class AnlDsetColController {
 
     private final AnlDsetColService anlDsetColService;
 
-    @Operation(summary = "데이터셋 등록", description = "분석 대상 데이터셋을 신규 등록한다. 등록자는 인증 정보에서 자동으로 채워진다.")
+    @Operation(
+            summary = "데이터셋 등록",
+            description = "분석 대상 데이터셋을 신규 등록한다. 등록자는 인증 정보(로그인한 사용자)에서 자동으로 채워지고, "
+                    + "datasetId/requestNo(업무키)는 서버가 자동 채번하므로 요청 바디에 넣지 않는다."
+    )
     @PostMapping
     public ResponseEntity<AnlDsetRsp> createDset(
             @Valid @RequestBody AnlDsetCreateReq req,
@@ -53,14 +60,19 @@ public class AnlDsetColController {
         return ResponseEntity.ok(anlDsetColService.findDsetByRequester(actor.getUserId()));
     }
 
-    @Operation(summary = "데이터셋 단건 조회", description = "데이터셋 ID로 단건 상세를 조회한다.")
+    @Operation(summary = "데이터셋 단건 조회", description = "데이터셋 ID(업무키)로 단건 상세를 조회한다.")
     @GetMapping("/{datasetId}")
     public ResponseEntity<AnlDsetRsp> findDsetById(
-            @Parameter(description = "데이터셋 ID") @PathVariable String datasetId) {
+            @Parameter(description = "데이터셋 ID (데이터셋 등록 응답에서 받은 값)", example = "DS0000000001")
+            @PathVariable(value="datasetId") String datasetId) {
         return ResponseEntity.ok(anlDsetColService.findDsetById(datasetId));
     }
 
-    @Operation(summary = "컬럼 메타 일괄 등록", description = "하나의 데이터셋에 속한 컬럼 메타 정보를 여러 건 한 번에 등록한다.")
+    @Operation(
+            summary = "컬럼 메타 일괄 등록",
+            description = "하나의 데이터셋에 속한 컬럼 메타 정보를 여러 건 한 번에 등록한다(테이블 메타 스캔 결과 저장용). "
+                    + "요청 바디의 datasetId 는 먼저 등록해 둔 데이터셋의 ID 여야 한다."
+    )
     @PostMapping("/columns")
     public ResponseEntity<List<AnlColRsp>> createColumnsBulk(@Valid @RequestBody AnlColBulkCreateReq req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(anlDsetColService.createColumnsBulk(req));
@@ -69,7 +81,8 @@ public class AnlDsetColController {
     @Operation(summary = "데이터셋별 컬럼 목록 조회", description = "지정한 데이터셋에 등록된 컬럼 메타 목록을 조회한다.")
     @GetMapping("/{datasetId}/columns")
     public ResponseEntity<List<AnlColRsp>> findColumnsByDataset(
-            @Parameter(description = "데이터셋 ID") @PathVariable String datasetId) {
+            @Parameter(description = "데이터셋 ID", example = "DS0000000001")
+            @PathVariable(value="datasetId") String datasetId) {
         return ResponseEntity.ok(anlDsetColService.findColumnsByDataset(datasetId));
     }
 }
