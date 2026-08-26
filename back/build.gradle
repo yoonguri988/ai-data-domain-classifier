@@ -40,11 +40,14 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-   
+    
     // Swagger/OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
     //implementation 'org.springdoc:springdoc-openapi-starter-oauth2:2.5.0'   
    
+    // 외부 API 연동 (AiDomainClassifier 가 RestClient 로 외부 AI API 호출)
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
+
 	// oracle 
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
     

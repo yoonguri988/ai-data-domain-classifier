@@ -14,10 +14,10 @@ import pf.cyj.sys.entity.DmnCd;
 @AllArgsConstructor
 public class DmnCdRsp {
 
-    @Schema(description = "표준 도메인 코드", example = "DOM_PHONE")
+    @Schema(description = "표준 도메인 코드", example = "CONTACT")
     private String domainCode;
 
-    @Schema(description = "표준 도메인 한글명", example = "전화번호")
+    @Schema(description = "표준 도메인 한글명", example = "연락처")
     private String domainNameKo;
 
     @Schema(description = "정렬 순서", example = "1")

@@ -18,7 +18,7 @@ public class StdDmnReqCreateReq {
     @NotNull(message = "컬럼 ID는 필수입니다.")
     private Long columnId;
 
-    @Schema(description = "제안하는 표준 도메인 코드", example = "DOM_PHONE")
+    @Schema(description = "제안하는 표준 도메인 코드", example = "CONTACT")
     @NotNull(message = "제안 도메인 코드는 필수입니다.")
     private String proposedDomainCode;
 

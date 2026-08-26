@@ -26,7 +26,7 @@ public class AnlJobRsp {
     @Schema(description = "작업 유형", example = "REDETECT")
     private String jobType;
 
-    @Schema(description = "대상 데이터셋 ID", example = "DS_00000001")
+    @Schema(description = "대상 데이터셋 ID", example = "DS0000000001")
     private String datasetId;
 
     @Schema(description = "스케줄 타입 - ONCE(1회)/CRON(주기)", example = "ONCE")
