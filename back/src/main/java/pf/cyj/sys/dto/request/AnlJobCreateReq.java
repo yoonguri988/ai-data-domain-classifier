@@ -20,7 +20,7 @@ public class AnlJobCreateReq {
     @Size(max = 200)
     private String jobName;
 
-    @Schema(description = "작업 유형 (선택)", example = "REDETECT")
+    @Schema(description = "작업 유형 (선택)", example = "DOMAIN_PREDICT")
     @Size(max = 20)
     private String jobType;
 

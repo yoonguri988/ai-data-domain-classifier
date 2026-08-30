@@ -23,7 +23,7 @@ public class AnlJobRsp {
     @Schema(description = "배치작업명", example = "야간 재판별 배치")
     private String jobName;
 
-    @Schema(description = "작업 유형", example = "REDETECT")
+    @Schema(description = "작업 유형", example = "DOMAIN_PREDICT")
     private String jobType;
 
     @Schema(description = "대상 데이터셋 ID", example = "DS0000000001")
