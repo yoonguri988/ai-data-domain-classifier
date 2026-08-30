@@ -20,7 +20,7 @@ public class NotiLogRsp {
     @Schema(description = "알림 이력 ID", example = "1")
     private Long notificationId;
 
-    @Schema(description = "발송 채널 - EMAIL/SMS", example = "EMAIL")
+    @Schema(description = "발송 채널 - 현재는 EMAIL만 지원", example = "EMAIL")
     private NotiChnl channel;
 
     @Schema(description = "수신 대상 사용자 ID", example = "1")

@@ -23,7 +23,10 @@ import pf.cyj.sys.repository.DmnCdRepository;
 import pf.cyj.sys.repository.StdDmnRepository;
 import pf.cyj.sys.repository.StdDmnReqRepository;
 
-/** 표준도메인승인 - 신청(신청본) 등록/승인/반려, 확정(확정본) 조회 */
+/**
+ * 표준도메인승인 - 신청(신청본) 등록/승인/반려, 확정(확정본) 조회.
+ * 승인/반려가 결정되면 신청자에게 이메일 알림을 자동 발송한다(NotiRptService, v4.7).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +37,7 @@ public class StdDmnService {
     private final DmnCdRepository dmnCdRepository;
     private final StdDmnReqRepository stdDmnReqRepository;
     private final StdDmnRepository stdDmnRepository;
+    private final NotiRptService notiRptService;
 
     /** 표준 도메인 확정을 신청한다(상태는 PENDING 으로 시작해 관리자 승인/반려를 기다린다). */
     @Transactional
@@ -82,13 +86,25 @@ public class StdDmnService {
         entity.setReviewedBy(reviewer);
         entity.setReviewedAt(LocalDateTime.now());
 
+        String title;
+        String content;
         if (Boolean.TRUE.equals(req.getApprove())) {
             entity.setRequestStatus(ReqStatCd.APPROVED);
             confirmDomain(entity, reviewer);
+            title = "표준 도메인 확정 승인 완료";
+            content = "[" + entity.getAnlCol().getColumnName() + "] 컬럼의 표준 도메인이 '"
+                    + entity.getProposedDmnCd().getDomainNameKo() + "'(으)로 확정되었습니다.";
         } else {
             entity.setRequestStatus(ReqStatCd.REJECTED);
             entity.setRejectReason(req.getRejectReason());
+            title = "표준 도메인 확정 신청 반려";
+            content = "[" + entity.getAnlCol().getColumnName() + "] 컬럼의 표준 도메인 확정 신청이 반려되었습니다. 사유: "
+                    + req.getRejectReason();
         }
+
+        // 알림 발송이 실패해도(예: 메일 서버 오류) 승인/반려 자체는 이미 확정됐으니 롤백하지 않는다 -
+        // sendAndRecord() 내부에서 실패를 예외로 던지지 않고 SEND_STATUS=FAIL 로만 기록하는 이유다.
+        notiRptService.sendAndRecord(entity.getRequestedBy(), entity, title, content);
 
         return StdDmnReqRsp.from(entity);
     }
