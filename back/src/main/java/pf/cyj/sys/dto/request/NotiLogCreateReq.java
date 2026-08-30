@@ -1,7 +1,6 @@
 package pf.cyj.sys.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,18 +9,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 알림 발송 이력(NOTIFICATION_LOG) 등록 요청 - 승인요청/승인완료 등 알림을 발송했다는 이력을 기록한다.
- * 실제 발송(coolsms/메일)은 이후 외부 연동 단계에서 붙고, 지금은 이력만 남긴다.
+ * 알림 발송 이력(NOTIFICATION_LOG) 등록 요청 - 승인요청/승인완료 등 알림을 이메일로 실제 발송하고
+ * 그 결과를 이력으로 남긴다. 채널은 현재 이메일만 지원해서(NotiChnl 참고) 요청 바디에 따로 받지 않는다.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotiLogCreateReq {
-
-    @Schema(description = "발송 채널 - EMAIL 또는 SMS", example = "EMAIL", allowableValues = {"EMAIL", "SMS"})
-    @NotBlank(message = "채널은 필수입니다.")
-    private String channel;
 
     @Schema(description = "수신 대상 사용자 ID", example = "1")
     @NotNull(message = "수신 대상 사용자 ID는 필수입니다.")

@@ -23,19 +23,25 @@ import pf.cyj.sys.security.ActorContext;
 import pf.cyj.sys.service.NotiRptService;
 
 /**
- * 알림/리포트 - 발송/출력 이력 기록 및 조회. 전부 로그인이 필요하다.
+ * 알림/리포트 - 알림은 실제 발송(이메일)까지 하고 이력을 남긴다. 리포트 이력 조회/수동 기록은
+ * 여기서 하고, 실제 PDF 생성/다운로드는 AnlDsetColController(GET /api/datasets/{datasetId}/report.pdf,
+ * PdfReportService, v4.8)가 담당하며 다운로드와 동시에 이력도 자동으로 남는다. 전부 로그인이 필요하다.
  * 조회는 본인 이력만 노출한다(findNotificationsByUser 를 ActorContext 의 getUserId() 로만 호출 -
- * 다른 사용자 ID 를 파라미터로 받지 않아 IDOR 을 원천 차단). 실제 발송(coolsms/mail)과
- * PDF 생성(PDFBox)은 NotiRptService 문서와 동일하게 외부 연동 단계에서 붙는다.
+ * 다른 사용자 ID 를 파라미터로 받지 않아 IDOR 을 원천 차단).
  */
-@Tag(name = "NotificationReport", description = "알림/리포트 - 발송/출력 이력 기록 및 본인 이력 조회")
+@Tag(name = "NotificationReport", description = "알림/리포트 - 알림 발송(이메일) 및 리포트 출력 이력 조회·수동기록")
 @RestController
 @RequiredArgsConstructor
 public class NotiRptController {
 
     private final NotiRptService notiRptService;
 
-    @Operation(summary = "알림 발송 이력 기록", description = "알림(문자/메일 등) 발송 이력을 기록한다. 실제 발송 연동은 별도 단계에서 붙는다.")
+    @Operation(
+            summary = "알림 발송 (실제 이메일 발송)",
+            description = "지정한 사용자의 email로 실제 이메일을 발송하고 그 결과를 이력으로 남긴다. "
+                    + "대상 사용자에게 email이 없거나 메일 서버 오류가 나면 발송은 건너뛰고 SEND_STATUS=FAIL로 "
+                    + "기록된다(발송 실패가 500 에러로 이어지지는 않는다)."
+    )
     @PostMapping("/api/notifications")
     public ResponseEntity<NotiLogRsp> recordNotification(@Valid @RequestBody NotiLogCreateReq req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(notiRptService.recordNotification(req));
@@ -48,7 +54,12 @@ public class NotiRptController {
         return ResponseEntity.ok(notiRptService.findNotificationsByUser(actor.getUserId()));
     }
 
-    @Operation(summary = "리포트 출력 이력 기록", description = "리포트(PDF 등) 출력/내보내기 이력을 기록한다. 실제 PDF 생성 연동은 별도 단계에서 붙는다.")
+    @Operation(
+            summary = "리포트 출력 이력 수동 기록",
+            description = "리포트 출력/내보내기 이력을 수동으로 기록한다. 실제 PDF를 생성해서 받으려면 이 API 대신 "
+                    + "GET /api/datasets/{datasetId}/report.pdf 를 호출한다 - 그쪽은 PDF 다운로드와 이력 기록을 "
+                    + "한 번에 처리하므로, 이 API 는 외부에서 이미 만들어진 리포트를 내보냈다는 이력만 남기고 싶을 때 쓴다."
+    )
     @PostMapping("/api/report-exports")
     public ResponseEntity<RptExpLogRsp> recordReportExport(@Valid @RequestBody RptExpLogCreateReq req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(notiRptService.recordReportExport(req));
@@ -57,7 +68,7 @@ public class NotiRptController {
     @Operation(summary = "데이터셋별 리포트 출력 이력 조회", description = "지정한 데이터셋에 대해 기록된 리포트 출력 이력 목록을 최신순으로 조회한다.")
     @GetMapping("/api/report-exports/dataset/{datasetId}")
     public ResponseEntity<List<RptExpLogRsp>> findReportsByDataset(
-            @Parameter(description = "데이터셋 ID", example = "DS_00000001")
+            @Parameter(description = "데이터셋 ID", example = "DS0000000001")
             @PathVariable String datasetId) {
         return ResponseEntity.ok(notiRptService.findReportsByDataset(datasetId));
     }
