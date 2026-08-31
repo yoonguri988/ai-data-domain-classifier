@@ -42,7 +42,7 @@ spring:
     password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
-      ail.smtp.starttls.enable: true
+      mail.smtp.starttls.enable: true
 
 server:
   port: ${SERVER_PORT}
