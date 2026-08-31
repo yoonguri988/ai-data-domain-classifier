@@ -5,7 +5,7 @@ import datasetReducer, {
   createDatasetRequest,
   createDatasetSuccess,
   createDatasetFailure,
-} from "./datasetReducer";
+} from "../dataset/datasetReducer";
 
 const initialState = {
   list: [], loading: false, error: null, creating: false, createError: null,

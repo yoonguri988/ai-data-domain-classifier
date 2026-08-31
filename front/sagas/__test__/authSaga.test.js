@@ -1,7 +1,7 @@
 import { Buffer } from "buffer";
 import { call, put } from "redux-saga/effects";
 import api from "../../api/axios";
-import { loginSaga, loadUserSaga, logoutSaga } from "./authSaga";
+import { loginSaga, loadUserSaga, logoutSaga } from "../auth/authSaga";
 import {
   loginSuccess, loginFailure, loadUserSuccess, loadUserFailure, logoutDone,
 } from "../../reducers/auth/authReducer";

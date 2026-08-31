@@ -6,7 +6,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Card, Table, Button, Space, Modal, Form, Input, Switch, Select, message, Empty,
+  Card, Table, Button, Space, Modal, Form, Input, Switch, Select, message, Empty, Tag,
 } from "antd";
 import { PlusOutlined, FilePdfOutlined, RobotOutlined } from "@ant-design/icons";
 import api from "../../../api/axios";
@@ -16,7 +16,13 @@ import { fetchPredictionsRequest, predictRequest } from "../../../reducers/predi
 // 컬럼 한 줄 + 그 컬럼의 AI 판별 결과(Top-N)를 함께 그리는 행 컴포넌트.
 // prediction 리듀서의 상태는 columnId 별로 나뉘어 있어서(reducers/prediction/predictionReducer.js 참고),
 // Table 의 expandable 대신 각 행을 별도 컴포넌트로 빼서 컬럼별로 독립적으로 useSelector 하게 했다.
-function ColumnPredictionRow({ column, onRequestConfirm }) {
+//
+// confirmedDomain: 이 컬럼에 이미 확정된 표준 도메인이 있으면 그 정보(StdDmnRsp), 없으면 null.
+// GET /api/std-domains/columns/{columnId} 는 승인/반려 기능(StdDmnController)과 함께 처음부터 있었지만,
+// 이 화면에서 아무도 호출하지 않아서 "확정 신청 → 승인자가 승인 → 신청자 화면에는 아무 표시도 안 남는"
+// 상태였다(승인 여부는 /approvals 목록에서만 확인 가능했다). 신청한 사람 입장에서 자기 신청이 어떻게
+// 됐는지 다시 여기로 돌아와서 볼 수 있어야 자연스러운 흐름이라 판단해 태그로 노출했다.
+function ColumnPredictionRow({ column, onRequestConfirm, confirmedDomain }) {
   const dispatch = useDispatch();
   const predictions = useSelector((s) => s.prediction.byColumnId[column.columnId] || []);
   const loading = useSelector((s) => s.prediction.loadingColumnIds.includes(column.columnId));
@@ -30,7 +36,16 @@ function ColumnPredictionRow({ column, onRequestConfirm }) {
     <Card
       type="inner"
       size="small"
-      title={`${column.columnName}${column.columnNameKo ? ` (${column.columnNameKo})` : ""}`}
+      title={(
+        <Space>
+          {`${column.columnName}${column.columnNameKo ? ` (${column.columnNameKo})` : ""}`}
+          {confirmedDomain && (
+            <Tag color="green">
+              {`확정: ${confirmedDomain.domainNameKo} (v${confirmedDomain.versionNo})`}
+            </Tag>
+          )}
+        </Space>
+      )}
       style={{ marginBottom: 12 }}
       extra={(
         <Space>
@@ -78,6 +93,12 @@ ColumnPredictionRow.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   column: PropTypes.object.isRequired,
   onRequestConfirm: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  confirmedDomain: PropTypes.object,
+};
+
+ColumnPredictionRow.defaultProps = {
+  confirmedDomain: null,
 };
 
 function DatasetDetailPage() {
@@ -87,6 +108,7 @@ function DatasetDetailPage() {
   const [dataset, setDataset] = useState(null);
   const [columns, setColumns] = useState([]);
   const [domains, setDomains] = useState([]);
+  const [confirmedByColumnId, setConfirmedByColumnId] = useState({});
   const [loadingPage, setLoadingPage] = useState(true);
 
   const [columnModalOpen, setColumnModalOpen] = useState(false);
@@ -110,6 +132,21 @@ function DatasetDetailPage() {
       setDataset(dsetRes.data);
       setColumns(colsRes.data);
       setDomains(domainsRes.data);
+
+      // 컬럼별 확정 여부는 컬럼 목록을 받아온 뒤에야 columnId를 알 수 있어서 별도로 이어서 불러온다.
+      // 확정 안 된 컬럼은 404가 정상 응답이라, 그 경우만 조용히 null 처리하고 나머지 에러는 그대로 띄운다.
+      const confirmedEntries = await Promise.all(
+        colsRes.data.map(async (col) => {
+          try {
+            const { data } = await api.get(`/api/std-domains/columns/${col.columnId}`);
+            return [col.columnId, data];
+          } catch (error) {
+            if (error.response?.status === 404) return [col.columnId, null];
+            throw error;
+          }
+        }),
+      );
+      setConfirmedByColumnId(Object.fromEntries(confirmedEntries));
     } catch (error) {
       message.error(error.response?.data?.error || "데이터셋 정보를 불러오지 못했습니다.");
     } finally {
@@ -200,7 +237,12 @@ function DatasetDetailPage() {
           <Empty description="등록된 컬럼이 없습니다. '컬럼 등록'으로 먼저 컬럼 메타를 추가하세요." />
         ) : (
           columns.map((column) => (
-            <ColumnPredictionRow key={column.columnId} column={column} onRequestConfirm={openConfirmModal} />
+            <ColumnPredictionRow
+              key={column.columnId}
+              column={column}
+              onRequestConfirm={openConfirmModal}
+              confirmedDomain={confirmedByColumnId[column.columnId]}
+            />
           ))
         )}
       </Card>

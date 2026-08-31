@@ -1,6 +1,6 @@
 import { call, put } from "redux-saga/effects";
 import api from "../../api/axios";
-import { fetchMyDatasetsSaga, createDatasetSaga } from "./datasetSaga";
+import { fetchMyDatasetsSaga, createDatasetSaga } from "../dataset/datasetSaga";
 import {
   fetchMyDatasetsSuccess,
   fetchMyDatasetsFailure,

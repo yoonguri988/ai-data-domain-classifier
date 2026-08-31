@@ -1,4 +1,4 @@
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { call, put, takeLatest } from "redux-saga/effects";
 import api from "../../api/axios";
 import {
@@ -12,6 +12,9 @@ import {
   logoutDone,
 } from "../../reducers/auth/authReducer";
 
+// jwt-decode v4부터 default export가 없어졌다 - `jwtDecode` named export를 써야 한다(api/axios.js의
+// decodeRoles 주석 참고). default로 가져오면 undefined가 호출돼 예외가 나고, 아래 catch에 걸려
+// roles가 항상 []로 조용히 빠진다.
 const decodeRoles = (accessToken) => {
   try {
     return jwtDecode(accessToken).roles || [];
@@ -20,14 +23,16 @@ const decodeRoles = (accessToken) => {
   }
 };
 
-function* loginSaga(action) {
+export function* loginSaga(action) {
   try {
     // action.payload = { loginId, password } (LoginReq)
     const { data } = yield call(api.post, "/auth/login", action.payload);
-    yield put(loginSuccess({
-      accessToken: data.accessToken,
-      user: { ...data.user, roles: decodeRoles(data.accessToken) },
-    }));
+    yield put(
+      loginSuccess({
+        accessToken: data.accessToken,
+        user: { ...data.user, roles: decodeRoles(data.accessToken) },
+      }),
+    );
   } catch (error) {
     const message = error.response?.data?.error || "로그인에 실패했습니다.";
     yield put(loginFailure(message));
@@ -40,19 +45,23 @@ function* loginSaga(action) {
 // 만료됐으면 그냥 로그아웃 상태로 남는다(에러를 화면에 띄우지 않는다 - 사용자 입장에선 "원래 로그인
 // 안 한 상태"와 구분이 안 가야 자연스럽다). silent: true 를 넘겨서 api/axios.js 가 이 시도가 실패해도
 // 화면을 강제로 옮기지 않게 한다(실패 처리는 아래 catch가 loadUserFailure로 조용히 담당한다).
-function* loadUserSaga() {
+export function* loadUserSaga() {
   try {
-    const { data } = yield call(api.post, "/auth/reissue", null, { silent: true });
-    yield put(loadUserSuccess({
-      accessToken: data.accessToken,
-      user: { ...data.user, roles: decodeRoles(data.accessToken) },
-    }));
+    const { data } = yield call(api.post, "/auth/reissue", null, {
+      silent: true,
+    });
+    yield put(
+      loadUserSuccess({
+        accessToken: data.accessToken,
+        user: { ...data.user, roles: decodeRoles(data.accessToken) },
+      }),
+    );
   } catch (error) {
     yield put(loadUserFailure());
   }
 }
 
-function* logoutSaga() {
+export function* logoutSaga() {
   try {
     yield call(api.post, "/auth/logout");
   } catch (error) {

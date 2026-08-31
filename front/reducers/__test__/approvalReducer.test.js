@@ -5,7 +5,7 @@ import approvalReducer, {
   reviewRequest,
   reviewSuccess,
   reviewFailure,
-} from "./approvalReducer";
+} from "../approval/approvalReducer";
 
 const initialState = {
   pendingList: [], loading: false, error: null, reviewingIds: [],

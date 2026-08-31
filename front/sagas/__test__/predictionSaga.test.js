@@ -1,6 +1,6 @@
 import { call, put } from "redux-saga/effects";
 import api from "../../api/axios";
-import { fetchPredictionsSaga, predictSaga } from "./predictionSaga";
+import { fetchPredictionsSaga, predictSaga } from "../prediction/predictionSaga";
 import {
   fetchPredictionsSuccess,
   fetchPredictionsFailure,

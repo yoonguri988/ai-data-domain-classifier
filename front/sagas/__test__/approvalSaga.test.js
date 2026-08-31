@@ -1,6 +1,6 @@
 import { call, put } from "redux-saga/effects";
 import api from "../../api/axios";
-import { fetchPendingSaga, reviewSaga } from "./approvalSaga";
+import { fetchPendingSaga, reviewSaga } from "../approval/approvalSaga";
 import {
   fetchPendingSuccess,
   fetchPendingFailure,

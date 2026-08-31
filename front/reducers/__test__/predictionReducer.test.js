@@ -5,7 +5,7 @@ import predictionReducer, {
   predictRequest,
   predictDone,
   predictFailure,
-} from "./predictionReducer";
+} from "../prediction/predictionReducer";
 
 const initialState = {
   byColumnId: {}, loadingColumnIds: [], predictingColumnIds: [], error: null,

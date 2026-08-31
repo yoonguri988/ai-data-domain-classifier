@@ -8,7 +8,7 @@ import authReducer, {
   tokenRefreshed,
   logoutRequest,
   logoutDone,
-} from "./authReducer";
+} from "../auth/authReducer";
 
 const initialState = {
   accessToken: null,

@@ -1,6 +1,6 @@
 // api/axios.js
 import axios from "axios";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { message } from "antd";
 import { getStore } from "../store/storeRegistry";
 import { tokenRefreshed } from "../reducers/auth/authReducer";
@@ -19,6 +19,9 @@ const api = axios.create({
 // LoginRsp.accessToken 안에는 loginId/roles 클레임이 들어 있다(JwtProvider.createAccessToken 참고).
 // UsrRsp(로그인/재발급 응답의 user 필드)에는 roles 가 없어서, 화면에서 권한별로 메뉴/버튼을 가리려면
 // accessToken 을 직접 디코딩해서 roles 를 꺼내야 한다.
+// 주의: jwt-decode v4부터는 default export가 없다(v3의 `import jwtDecode from "jwt-decode"`가 v4에서는
+// `jwtDecode`가 undefined가 돼 호출 시 예외가 나고, 아래 catch에 걸려 조용히 roles=[]로 빠진다 - 실제로
+// 이 프로젝트에서 그렇게 되어 있었다. `import { jwtDecode } from "jwt-decode"` named export로 가져와야 한다.
 const decodeRoles = (accessToken) => {
   try {
     return jwtDecode(accessToken).roles || [];
