@@ -66,7 +66,9 @@ public class StdDmnController {
     @Operation(
             summary = "확정 신청 승인/반려",
             description = "대기 중인 확정 신청 건을 승인 또는 반려 처리한다. 승인 시 표준 도메인 확정본(StdDmn)이 "
-                    + "생성/갱신된다(기존 확정본이 있으면 versionNo 가 1 증가). ROLE_ADMIN 권한이 필요하다."
+                    + "생성/갱신된다(기존 확정본이 있으면 versionNo 가 1 증가). 승인/반려 어느 쪽이든 처리 즉시 "
+                    + "신청자에게 이메일 알림이 자동 발송되고 그 이력이 GET /api/notifications/mine 에 남는다"
+                    + "(발송이 실패해도 승인/반려 처리 자체는 롤백되지 않는다). ROLE_ADMIN 권한이 필요하다."
     )
     @PatchMapping("/api/std-domain-requests/{requestId}/review")
     @PreAuthorize("hasRole('ADMIN')")
