@@ -21,7 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import pf.cyj.sys.entity.type.NotiChnl;
 import pf.cyj.sys.entity.type.SendStatCd;
 
-/** NOTIFICATION_LOG - 승인요청/승인완료 알림 발송이력 (spring-boot-starter-mail, coolsms sdk) */
+/** NOTIFICATION_LOG - 승인요청/승인완료 알림 발송이력 (spring-boot-starter-mail) */
 @Entity
 @Table(name = "NOTIFICATION_LOG")
 @Getter

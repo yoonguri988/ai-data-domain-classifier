@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pf.cyj.sys.dto.request.LoginReq;
 import pf.cyj.sys.dto.request.SignupReq;
+import pf.cyj.sys.dto.request.UsrRoleUpdateReq;
+import pf.cyj.sys.dto.response.AppRoleRsp;
 import pf.cyj.sys.dto.response.LoginRsp;
+import pf.cyj.sys.dto.response.UsrAdmRsp;
 import pf.cyj.sys.dto.response.UsrRsp;
 import pf.cyj.sys.entity.AppRole;
 import pf.cyj.sys.entity.AppUsr;
@@ -144,6 +147,43 @@ public class AuthAcntService {
         revokeRefreshToken(userId, refreshToken);
 
         return issueTokens(usr);
+    }
+
+    /**
+     * (관리자) 전체 사용자 목록 - 시드 데이터(admin/reviewer1) 말고도 회원가입으로 새로 들어온 사용자에게
+     * 관리자가 직접 ROLE_REVIEWER 등을 부여할 수 있어야 해서 만들었다. UsrRsp 대신 roles 가 포함된
+     * UsrAdmRsp 를 쓴다.
+     */
+    public List<UsrAdmRsp> findAllUsers() {
+        return appUsrRepository.findAll().stream()
+                .map(usr -> UsrAdmRsp.from(usr, resolveRoles(usr.getUserId())))
+                .toList();
+    }
+
+    /** (관리자) 부여 가능한 전체 역할 목록 - 사용자 권한 부여 화면의 역할 선택 콤보박스용. */
+    public List<AppRoleRsp> findAllRoles() {
+        return appRoleRepository.findAll().stream().map(AppRoleRsp::from).toList();
+    }
+
+    /**
+     * (관리자) 사용자 권한 부여/회수 - grant=true 면 USER_ROLE 에 (userId, roleId) 를 추가하고, false 면
+     * 제거한다. 이미 가진 역할을 다시 부여하거나, 없는 역할을 회수해도 예외 없이 조용히 그대로 둔다
+     * (멱등 처리 - 관리자가 화면에서 체크박스를 실수로 두 번 눌러도 에러가 나면 안 된다).
+     */
+    @Transactional
+    public UsrAdmRsp updateUserRole(Long userId, UsrRoleUpdateReq req) {
+        AppUsr usr = appUsrRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다: " + userId));
+        AppRole role = appRoleRepository.findByRoleCode(req.getRoleCode())
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 역할 코드입니다: " + req.getRoleCode()));
+
+        if (Boolean.TRUE.equals(req.getGrant())) {
+            usrRoleRepository.save(UsrRole.builder().userId(userId).roleId(role.getRoleId()).build());
+        } else {
+            usrRoleRepository.deleteByUserIdAndRoleId(userId, role.getRoleId());
+        }
+
+        return UsrAdmRsp.from(usr, resolveRoles(userId));
     }
 
     /** 로그아웃 - Redis 에 저장된 Refresh Token 을 삭제하고 감사이력(REFRESH_TOKEN)에 폐기 처리한다. */
