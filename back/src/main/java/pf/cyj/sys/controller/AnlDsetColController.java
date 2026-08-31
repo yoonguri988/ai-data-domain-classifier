@@ -75,7 +75,7 @@ public class AnlDsetColController {
     @GetMapping("/{datasetId}")
     public ResponseEntity<AnlDsetRsp> findDsetById(
             @Parameter(description = "데이터셋 ID (데이터셋 등록 응답에서 받은 값)", example = "DS0000000001")
-            @PathVariable String datasetId) {
+            @PathVariable("datasetId") String datasetId) {
         return ResponseEntity.ok(anlDsetColService.findDsetById(datasetId));
     }
 
@@ -93,7 +93,7 @@ public class AnlDsetColController {
     @GetMapping("/{datasetId}/columns")
     public ResponseEntity<List<AnlColRsp>> findColumnsByDataset(
             @Parameter(description = "데이터셋 ID", example = "DS0000000001")
-            @PathVariable String datasetId) {
+            @PathVariable("datasetId") String datasetId) {
         return ResponseEntity.ok(anlDsetColService.findColumnsByDataset(datasetId));
     }
 
@@ -105,7 +105,7 @@ public class AnlDsetColController {
     @GetMapping("/{datasetId}/report.pdf")
     public ResponseEntity<byte[]> downloadReport(
             @Parameter(description = "데이터셋 ID", example = "DS0000000001")
-            @PathVariable String datasetId,
+            @PathVariable("datasetId") String datasetId,
             @AuthenticationPrincipal CustomOAuth2User principal) {
         ActorContext actor = ActorContext.from(principal);
         byte[] pdf = pdfReportService.generateDatasetReport(datasetId);

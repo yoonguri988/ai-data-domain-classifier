@@ -69,7 +69,7 @@ public class NotiRptController {
     @GetMapping("/api/report-exports/dataset/{datasetId}")
     public ResponseEntity<List<RptExpLogRsp>> findReportsByDataset(
             @Parameter(description = "데이터셋 ID", example = "DS0000000001")
-            @PathVariable String datasetId) {
+            @PathVariable("datasetId") String datasetId) {
         return ResponseEntity.ok(notiRptService.findReportsByDataset(datasetId));
     }
 }

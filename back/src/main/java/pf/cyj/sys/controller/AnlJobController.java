@@ -84,7 +84,7 @@ public class AnlJobController {
     @GetMapping("/dataset/{datasetId}")
     public ResponseEntity<List<AnlJobRsp>> findJobsByDataset(
             @Parameter(description = "데이터셋 ID", example = "DS0000000001")
-            @PathVariable String datasetId) {
+            @PathVariable("datasetId") String datasetId) {
         return ResponseEntity.ok(anlJobService.findJobsByDataset(datasetId));
     }
 
