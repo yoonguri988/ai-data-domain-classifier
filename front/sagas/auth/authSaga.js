@@ -27,12 +27,10 @@ export function* loginSaga(action) {
   try {
     // action.payload = { loginId, password } (LoginReq)
     const { data } = yield call(api.post, "/auth/login", action.payload);
-    yield put(
-      loginSuccess({
-        accessToken: data.accessToken,
-        user: { ...data.user, roles: decodeRoles(data.accessToken) },
-      }),
-    );
+    yield put(loginSuccess({
+      accessToken: data.accessToken,
+      user: { ...data.user, roles: decodeRoles(data.accessToken) },
+    }));
   } catch (error) {
     const message = error.response?.data?.error || "로그인에 실패했습니다.";
     yield put(loginFailure(message));
@@ -47,15 +45,11 @@ export function* loginSaga(action) {
 // 화면을 강제로 옮기지 않게 한다(실패 처리는 아래 catch가 loadUserFailure로 조용히 담당한다).
 export function* loadUserSaga() {
   try {
-    const { data } = yield call(api.post, "/auth/reissue", null, {
-      silent: true,
-    });
-    yield put(
-      loadUserSuccess({
-        accessToken: data.accessToken,
-        user: { ...data.user, roles: decodeRoles(data.accessToken) },
-      }),
-    );
+    const { data } = yield call(api.post, "/auth/reissue", null, { silent: true });
+    yield put(loadUserSuccess({
+      accessToken: data.accessToken,
+      user: { ...data.user, roles: decodeRoles(data.accessToken) },
+    }));
   } catch (error) {
     yield put(loadUserFailure());
   }
@@ -69,6 +63,19 @@ export function* logoutSaga() {
     // 서버 쪽 Refresh Token 은 다음 로그인 때 새로 발급되면서 자연히 대체되므로 치명적이지 않다.
   } finally {
     yield put(logoutDone());
+
+    // 예전에는 로그아웃 버튼(Header.js)의 onClick 에서 dispatch(logoutRequest()) 직후에 바로
+    // router.push("/auth/login") 를 호출했다 - logoutRequest 는 비동기 saga(여기)라 이 시점엔 아직
+    // state.auth.user 가 로그인 상태 그대로 남아있는데, /auth/login 페이지의
+    // useEffect(() => { if (user) router.replace("/"); }, [user]) 가 그 stale user 값을 보고 곧바로
+    // "/"로 다시 튕겨내 버렸다(경쟁 상태 - 결과적으로 로그아웃 후에도 /dashboard/member 로 돌아가
+    // 있는 것처럼 보였다). logoutDone() 이 dispatch 돼 state.auth 가 완전히 초기화된 뒤인 지금 이
+    // 시점에 이동시키면 그 문제가 없다. router.push 대신 하드 리다이렉트(location.href)를 쓰는 이유는
+    // 이 saga가 컴포넌트 트리 밖이라 router 인스턴스에 접근할 수 없기도 하고, api/axios.js 의 401/
+    // reissue 실패 처리에서도 이미 같은 방식을 쓰고 있어서 로그인 페이지로 보내는 방식을 통일한다.
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/login";
+    }
   }
 }
 

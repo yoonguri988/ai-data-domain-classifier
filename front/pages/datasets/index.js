@@ -19,13 +19,18 @@ function DatasetsPage() {
   const {
     list, loading, creating, createError,
   } = useSelector((s) => s.dataset);
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = (user?.roles || []).includes("ROLE_ADMIN");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
+  // 관리자는 모든 사용자의 데이터셋을 볼 수 있어야 한다 - { all: true }를 실어 보내면
+  // datasetSaga.js가 /api/datasets/all(ROLE_ADMIN 전용)을 호출하고, 그 외에는 예전과 동일하게
+  // 본인 데이터셋(/mine)만 조회한다.
   useEffect(() => {
-    dispatch(fetchMyDatasetsRequest());
-  }, [dispatch]);
+    dispatch(fetchMyDatasetsRequest(isAdmin ? { all: true } : undefined));
+  }, [dispatch, isAdmin]);
 
   useEffect(() => {
     if (createError) {
@@ -69,7 +74,7 @@ function DatasetsPage() {
         <title>데이터셋 - AI 표준 도메인 추천</title>
       </Head>
       <Card
-        title="내 데이터셋"
+        title={isAdmin ? "전체 데이터셋 (관리자)" : "내 데이터셋"}
         extra={(
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
             데이터셋 등록

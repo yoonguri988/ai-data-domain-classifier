@@ -25,7 +25,10 @@ function OAuth2RedirectPage() {
     }
 
     dispatch(loadUserRequest());
-    router.replace("/");
+    // 요구사항: 소셜 로그인 후에는 "/"(역할별 분기 라우터, pages/index.js)를 거치지 않고 바로
+    // /dashboard/member 로 이동한다. 관리자 계정으로 소셜 로그인한 경우에도 동일하며, 관리자 전용
+    // 화면은 상단 메가메뉴(MegaMenu.js)에서 계속 접근할 수 있다.
+    router.replace("/dashboard/member");
   }, [router, dispatch]);
 
   return (

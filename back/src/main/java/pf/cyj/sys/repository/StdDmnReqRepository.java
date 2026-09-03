@@ -12,4 +12,10 @@ public interface StdDmnReqRepository extends JpaRepository<StdDmnReq, Long> {
     List<StdDmnReq> findByRequestStatusOrderByRequestedAtAsc(ReqStatCd requestStatus);
 
     List<StdDmnReq> findByRequestedBy_UserId(Long userId);
+
+    /** 같은 컬럼에 이미 PENDING 상태(처리 대기중)인 확정 신청이 있는지 - 중복 신청 방지용. */
+    boolean existsByAnlCol_ColumnIdAndRequestStatus(Long columnId, ReqStatCd requestStatus);
+
+    /** 승인/반려/대기 전체 이력을 최신순으로 조회한다(관리자/승인자용 "처리 이력" 화면). */
+    List<StdDmnReq> findAllByOrderByRequestedAtDesc();
 }

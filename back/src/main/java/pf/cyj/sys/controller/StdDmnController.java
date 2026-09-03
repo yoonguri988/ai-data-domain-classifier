@@ -66,6 +66,18 @@ public class StdDmnController {
     }
 
     @Operation(
+            summary = "확정 신청 전체(처리 이력) 조회",
+            description = "PENDING/APPROVED/REJECTED 를 가리지 않고 확정 신청 전체 이력을 최신순으로 조회한다. "
+                    + "이미 승인/반려 처리된 건을 확인하려면 대기 목록(/pending) 대신 이 API를 쓴다. "
+                    + "ROLE_ADMIN 또는 ROLE_REVIEWER 권한이 필요하다."
+    )
+    @GetMapping("/api/std-domain-requests")
+    @PreAuthorize("hasAnyRole('ADMIN','REVIEWER')")
+    public ResponseEntity<List<StdDmnReqRsp>> findAllRequests() {
+        return ResponseEntity.ok(stdDmnService.findAllRequests());
+    }
+
+    @Operation(
             summary = "확정 신청 승인/반려",
             description = "대기 중인 확정 신청 건을 승인 또는 반려 처리한다. 승인 시 표준 도메인 확정본(StdDmn)이 "
                     + "생성/갱신된다(기존 확정본이 있으면 versionNo 가 1 증가). 승인/반려 어느 쪽이든 처리 즉시 "
