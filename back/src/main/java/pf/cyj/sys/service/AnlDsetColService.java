@@ -65,6 +65,15 @@ public class AnlDsetColService {
         return anlDsetRepository.findByRequestedBy_UserId(requesterId).stream().map(AnlDsetRsp::from).toList();
     }
 
+    /**
+     * 등록자와 무관하게 전체 데이터셋 목록을 조회한다(관리자 전용 - AnlDsetColController 의
+     * GET /api/datasets/all 이 ROLE_ADMIN 만 호출을 허용한다). 일반 사용자는 findDsetByRequester()로
+     * 본인 데이터셋만 볼 수 있고, 관리자는 모든 사용자의 데이터셋을 볼 수 있어야 한다는 요구사항 반영.
+     */
+    public List<AnlDsetRsp> findAllDsets() {
+        return anlDsetRepository.findAll().stream().map(AnlDsetRsp::from).toList();
+    }
+
     /** 한 데이터셋에 속한 컬럼 메타데이터를 한 번에 여러 건 등록한다(테이블 메타 스캔 결과 저장용). */
     @Transactional
     public List<AnlColRsp> createColumnsBulk(AnlColBulkCreateReq req) {

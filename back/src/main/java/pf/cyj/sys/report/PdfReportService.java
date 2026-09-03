@@ -17,6 +17,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pf.cyj.sys.entity.AnlCol;
 import pf.cyj.sys.entity.AnlDset;
 import pf.cyj.sys.entity.DmnPdt;
@@ -50,7 +51,21 @@ public class PdfReportService {
     private final AnlColRepository anlColRepository;
     private final DmnPdtRepository dmnPdtRepository;
 
-    /** 지정한 데이터셋의 컬럼별 AI 판별 결과(Top-N)를 담은 PDF를 생성해 바이트 배열로 반환한다. */
+    /**
+     * 지정한 데이터셋의 컬럼별 AI 판별 결과(Top-N)를 담은 PDF를 생성해 바이트 배열로 반환한다.
+     *
+     * <p>(버그 수정) 이 메서드에 원래 @Transactional 이 없었다 - Spring Data JPA의 각 리포지토리 메서드
+     * (findById, findByAnlDset_DatasetId, findByAnlCol_ColumnIdOrderByPredictionRankAsc)는 자기
+     * 자신만의 @Transactional(readOnly=true)로 실행되고 메서드가 끝나는 즉시 그 트랜잭션(Hibernate
+     * 세션)이 닫힌다. DmnPdt.dmnCd 는 FetchType.LAZY 라서, 판별 결과가 있는 컬럼을 만나 아래 반복문에서
+     * p.getDmnCd().getDomainNameKo() 를 호출하는 시점엔 이미 그 조회에 쓰인 세션이 닫혀 있어
+     * org.hibernate.LazyInitializationException("could not initialize proxy - no Session")이
+     * 발생했다 - GlobalExceptionHandler의 handleUnexpected()로 떨어져 500 에러가 나면서 PDF 다운로드
+     * 자체가 실패했다(판별 결과가 없는 컬럼만 있는 데이터셋은 이 지연 로딩을 안 건드리므로 우연히
+     * 성공했다 - "PDF 생성 안되는거같은데,,?"라는 증상과 정확히 일치한다). 메서드 전체를 하나의
+     * 읽기전용 트랜잭션(세션)으로 묶어, 조회와 지연 로딩 접근이 같은 세션 안에서 이뤄지게 한다.
+     */
+    @Transactional(readOnly = true)
     public byte[] generateDatasetReport(String datasetId) {
         AnlDset dset = anlDsetRepository.findById(datasetId)
                 .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 데이터셋입니다: " + datasetId));

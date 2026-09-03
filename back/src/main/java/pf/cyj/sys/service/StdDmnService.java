@@ -42,6 +42,18 @@ public class StdDmnService {
     /** 표준 도메인 확정을 신청한다(상태는 PENDING 으로 시작해 관리자 승인/반려를 기다린다). */
     @Transactional
     public StdDmnReqRsp applyRequest(StdDmnReqCreateReq req, Long requesterId) {
+        // 이미 같은 컬럼에 처리 대기(PENDING) 중인 신청이 있으면 또 신청할 수 없게 막는다 - 막지
+        // 않으면 승인자가 같은 컬럼에 대한 신청을 여러 건 보게 되고, 그중 하나만 승인해도 나머지
+        // PENDING 건은 그대로 남아 있어 확정본(StdDmn) 상태와 어긋나 보일 수 있다. 이미 CONFIRMED된
+        // (승인 완료된) 컬럼에 대한 재신청까지 막지는 않는다 - review()의 confirmDomain()이 versionNo를
+        // 올리며 재확정을 허용하는 게 이 프로젝트의 의도된 설계이기 때문이다(예: 표준 도메인을 다시
+        // 검토해 다른 도메인으로 재분류하는 경우).
+        if (stdDmnReqRepository.existsByAnlCol_ColumnIdAndRequestStatus(req.getColumnId(), ReqStatCd.PENDING)) {
+            throw new BizRuleException(
+                    "DUPLICATE_PENDING_REQUEST",
+                    "이미 처리 대기 중인 확정 신청이 있습니다. columnId=" + req.getColumnId());
+        }
+
         AnlCol col = anlColRepository.findById(req.getColumnId())
                 .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 컬럼입니다: " + req.getColumnId()));
         DmnCd domain = dmnCdRepository.findById(req.getProposedDomainCode())
@@ -68,6 +80,15 @@ public class StdDmnService {
     /** 특정 사용자가 신청한 확정 요청 이력을 조회한다. */
     public List<StdDmnReqRsp> findRequestsByRequester(Long requesterId) {
         return stdDmnReqRepository.findByRequestedBy_UserId(requesterId).stream().map(StdDmnReqRsp::from).toList();
+    }
+
+    /**
+     * PENDING/APPROVED/REJECTED 를 가리지 않고 전체 확정 신청 이력을 최신순으로 조회한다(관리자/승인자용
+     * "처리 이력" 화면 - findPendingRequests() 는 PENDING 만 보여주므로 이미 승인/반려된 건은 이 메서드로
+     * 봐야 한다).
+     */
+    public List<StdDmnReqRsp> findAllRequests() {
+        return stdDmnReqRepository.findAllByOrderByRequestedAtDesc().stream().map(StdDmnReqRsp::from).toList();
     }
 
     /** 대기중인 확정 신청을 승인 또는 반려 처리한다. 승인 시 표준 도메인 확정본(StdDmn)이 생성/갱신된다. */

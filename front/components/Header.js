@@ -1,6 +1,5 @@
 // components/Header.js
 import React from "react";
-import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { Dropdown, Avatar, Menu, Tag } from "antd";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
@@ -36,7 +35,6 @@ const ROLE_BADGES = [
 ];
 
 function Header() {
-  const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const roles = user?.roles || [];
@@ -44,11 +42,16 @@ function Header() {
 
   const userMenu = (
     <Menu
-      items={[{ key: "logout", icon: <LogoutOutlined />, label: "로그아웃" }]}
+      items={[
+        { key: "logout", icon: <LogoutOutlined />, label: "로그아웃" },
+      ]}
       onClick={({ key }) => {
+        // /auth/login 으로의 이동은 여기서 하지 않는다 - logoutRequest()는 비동기 saga(logoutSaga)라
+        // 아직 로그아웃이 끝나기 전에 이동시키면 로그인 페이지가 stale한 user 값을 보고 다시 "/"로
+        // 튕겨내는 경쟁 상태가 있었다. logoutSaga가 logoutDone() 이후 하드 리다이렉트로 직접 이동시킨다
+        // (sagas/auth/authSaga.js 참고).
         if (key === "logout") {
           dispatch(logoutRequest());
-          router.push("/auth/login");
         }
       }}
     />
@@ -62,11 +65,7 @@ function Header() {
             {badge.label}
           </Tag>
         )}
-        <Avatar
-          size="small"
-          icon={<UserOutlined />}
-          style={{ marginRight: 8 }}
-        />
+        <Avatar size="small" icon={<UserOutlined />} style={{ marginRight: 8 }} />
         {user?.userName || "사용자"}
       </UserArea>
     </Dropdown>

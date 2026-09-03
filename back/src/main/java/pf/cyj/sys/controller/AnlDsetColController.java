@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,6 +70,17 @@ public class AnlDsetColController {
     public ResponseEntity<List<AnlDsetRsp>> findMyDsets(@AuthenticationPrincipal CustomOAuth2User principal) {
         ActorContext actor = ActorContext.from(principal);
         return ResponseEntity.ok(anlDsetColService.findDsetByRequester(actor.getUserId()));
+    }
+
+    @Operation(
+            summary = "전체 데이터셋 목록 조회",
+            description = "등록자와 무관하게 전체 데이터셋 목록을 조회한다. 관리자는 모든 사용자의 데이터셋을 볼 수 "
+                    + "있어야 하므로 ROLE_ADMIN 전용이다(일반 사용자는 /mine 으로 본인 데이터셋만 조회한다)."
+    )
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AnlDsetRsp>> findAllDsets() {
+        return ResponseEntity.ok(anlDsetColService.findAllDsets());
     }
 
     @Operation(summary = "데이터셋 단건 조회", description = "데이터셋 ID(업무키)로 단건 상세를 조회한다.")
