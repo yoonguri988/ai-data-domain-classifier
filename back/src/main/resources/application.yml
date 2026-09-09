@@ -17,7 +17,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate # 스키마는 03_DDL_DML_DCL_Oracle18cXE.sql 로 직접 관리하므로 애플리케이션이 스키마를 건드리지 않는다.
+      ddl-auto: update # 스키마는 03_DDL_DML_DCL_Oracle18cXE.sql 로 직접 관리하므로 애플리케이션이 스키마를 건드리지 않는다.
     properties:
       hibernate:
         format_sql: true

@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.fontbox.ttf.OTFParser;
+import org.apache.fontbox.ttf.TrueTypeFont;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -98,7 +101,14 @@ public class PdfReportService {
             for (AnlCol col : columns) {
                 String colTitle = col.getColumnName()
                         + (col.getColumnNameKo() != null ? " (" + col.getColumnNameKo() + ")" : "");
-                cursor.writeLine("■ " + colTitle, SECTION_SIZE);
+                // (버그 수정) 원래 "■ "(U+25A0, BLACK SQUARE) 접두어를 썼는데, 이 폰트는 한글
+                // 완성형·영문·숫자·기본 문장부호 글리프만 남긴 서브셋이라 도형 기호(■) 글리프가
+                // 아예 없다 - PDPageContentStream.showText()가 글리프 없는 코드포인트를 만나면
+                // "could not find the glyphId for the character" IOException을 던진다(제목/
+                // 데이터셋 정보 줄까지는 전부 정상 출력되다가, 첫 컬럼 섹션 줄에서만 100% 재현되는
+                // 이유). 폰트에 반드시 있는 ASCII 문장부호(#)로 바꿨다 - 도형 기호를 계속 쓰려면
+                // 폰트 서브셋 자체를 U+25A0 포함해서 다시 만들어야 한다.
+                cursor.writeLine("# " + colTitle, SECTION_SIZE);
 
                 List<DmnPdt> predictions =
                         dmnPdtRepository.findByAnlCol_ColumnIdOrderByPredictionRankAsc(col.getColumnId());
@@ -127,9 +137,38 @@ public class PdfReportService {
         }
     }
 
+    /**
+     * (버그 수정 - 이력) {@code NotoSansKR-Regular.ttf}는 확장자만 .ttf이고 실제로는 OpenType/CFF
+     * 외곽선 폰트다(구글 Noto Sans CJK KR 원본 자체가 CFF 방식이라, pyftsubset으로 서브셋해도 외곽선
+     * 형식은 그대로 유지된다 - 파일 앞 4바이트가 TrueType을 뜻하는 "\x00\x01\x00\x00"이 아니라
+     * OpenType/CFF를 뜻하는 "OTTO"다). 이 폰트를 PDFBox에 물리는 과정에서 순서대로 두 가지 문제가
+     * 있었다.
+     *
+     * <ol>
+     *   <li><b>로딩 단계</b>: {@code PDType0Font.load(document, InputStream)}(스트림 하나만 받는
+     *       버전)은 무조건 TrueType(glyf 외곽선) 전용 임베더(PDCIDFontType2Embedder)로 처리해서
+     *       "True Type fonts using CFF outlines are not supported" 예외가 났다. → {@link OTFParser}
+     *       로 직접 파싱해서 {@code OpenTypeFont}(TrueTypeFont 하위 타입)로 인식시키고,
+     *       {@code TrueTypeFont}를 받는 {@code PDType0Font.load(document, TrueTypeFont, embedSubset)}
+     *       오버로드를 쓰도록 고쳤다 - CFF 외곽선을 지원하는 PDCIDFontType0Embedder가 대신 선택된다.</li>
+     *   <li><b>서브셋 단계(이번에 새로 발견)</b>: 위 오버로드에 {@code embedSubset=true}를 주면,
+     *       PDFBox가 {@code document.save()} 시점에 "실제 PDF에 쓰인 글자만 남기고 나머지 글리프는
+     *       버리는" 서브셋팅을 시도한다. 그런데 PDFBox/FontBox 3.0.5의 서브셋 구현({@code TTFSubsetter})
+     *       은 TrueType(glyf 외곽선) 전용이라 내부적으로 {@code ttf.getGlyph(...)}를 호출하는데,
+     *       CFF 외곽선 폰트({@code OpenTypeFont})는 애초에 glyf 테이블이 없어서
+     *       {@code getGlyph()}가 {@code UnsupportedOperationException("OTF fonts do not have a
+     *       glyf table")}을 던진다 - 이 예외는 {@code IOException}이 아니라서 아래 catch 블록에도
+     *       안 걸리고 처리되지 않은 예외로 떨어졌다(FontBox/PDFBox가 CFF 폰트 서브셋팅 자체를 지원하지
+     *       않는 한계다). → {@code embedSubset=false}로 바꿔서 서브셋을 아예 시도하지 않고, 이미
+     *       한글 완성형/영문/숫자/기본 문장부호로 한 번 추려둔 폰트(약 1.9MB) 전체를 그대로 임베드하게
+     *       했다 - PDF 하나당 폰트 용량이 조금 늘긴 하지만(실제 쓰인 글자만 남기는 추가 축소가 없을
+     *       뿐), 서브셋팅 실패로 다운로드 자체가 안 되는 것보다는 훨씬 낫다.</li>
+     * </ol>
+     */
     private PDFont loadFont(PDDocument document) throws IOException {
         try (InputStream is = new ClassPathResource(FONT_PATH).getInputStream()) {
-            return PDType0Font.load(document, is);
+            TrueTypeFont otf = new OTFParser().parse(new RandomAccessReadBuffer(is));
+            return PDType0Font.load(document, otf, false);
         }
     }
 
