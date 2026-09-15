@@ -7,6 +7,7 @@
 > ✅ 회사 소스코드는 사용하지 않고 아이디어·아키텍처 패턴만 재구현(테이블/클래스명 전부 새로 지음)<br/>
 > ✅ 고객사명 등 식별정보는 포함하지 않음
 
+[![발표자료](https://img.shields.io/badge/v3%20발표자료-PDF-EA4335?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](https://github.com/yoonguri988/ai-data-domain-classifier/blob/830bbe2d749f53a3428209f419182046a67c2252/docs/AI%EA%B8%B0%EB%B0%98_%ED%91%9C%EC%A4%80%EB%8F%84%EB%A9%94%EC%9D%B8%EC%B6%94%EC%B2%9C_%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4.pdf)
 ---
 
 ## 1. 프로젝트 개요
@@ -170,29 +171,31 @@ Spring @Scheduled(1분 주기) → READY 상태 ANALYSIS_JOB 조회
 ---
 
 ## 6. 화면 시연
-
-시연 시나리오 흐름에 따라 실제 화면을 캡처(GIF/이미지)했습니다. 아래 각 항목의 이미지 경로만 실제 파일로 교체하면 됩니다(`docs/imgs/` 폴더에 넣고 파일명만 맞추는 걸 추천 — GitHub는 리포지토리 기준 상대경로를 그대로 렌더링합니다).
+시연 시나리오 흐름에 따라 실제 화면을 캡처(GIF/이미지)했습니다.
 
 ### 1. 일반사용자 — 회원가입 · 로그인
-![회원가입 및 로그인](docs/imgs/01_signup_login.gif)
+![회원가입 및 로그인](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/1_%EC%9D%BC%EB%B0%98%EC%82%AC%EC%9A%A9%EC%9E%90(%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85_%EB%A1%9C%EA%B7%B8%EC%9D%B8).gif)
 
 ### 2. 데이터셋 및 컬럼 등록
-![데이터셋 및 컬럼 등록](docs/imgs/02_dataset_column.gif)
+![데이터셋 및 컬럼 등록](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/2_3_%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%85%8B%EB%B0%8F%EC%BB%AC%EB%9F%BC%EB%93%B1%EB%A1%9D.gif)
 
 ### 3. AI 판별 실행
-![AI 판별 실행](docs/imgs/03_ai_predict.gif)
+![AI 판별 실행](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/4_AI%ED%8C%90%EB%B3%84%EC%8B%A4%ED%96%89.gif)
 
 ### 4. 표준 도메인 확정 신청
-![표준 도메인 확정 신청](docs/imgs/04_std_domain_request.gif)
+![표준 도메인 확정 신청](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/5_%ED%91%9C%EC%A4%80%EB%8F%84%EB%A9%94%EC%9D%B8%ED%99%95%EC%A0%95%EC%8B%A0%EC%B2%AD.gif)
 
 ### 5. [승인자] 승인 처리
-![승인자 승인 처리](docs/imgs/05_reviewer_approve.gif)
+![승인자 승인 처리](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/6_7_%EA%B9%80%EC%8A%B9%EC%9D%B8%EC%9D%98%EC%8A%B9%EC%9D%B8%EC%B2%98%EB%A6%AC.gif)
 
 ### 6. [관리자] 공통코드 등록 및 역할 부여
-![관리자 공통코드 등록 및 역할 부여](docs/imgs/06_admin_common_code_role.gif)
+#### 6-1. 관리자 공통코드 등록 
+![관리자 공통코드 등록](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/6_7_%EA%B9%80%EC%8A%B9%EC%9D%B8%EC%9D%98%EC%8A%B9%EC%9D%B8%EC%B2%98%EB%A6%AC.gif)
+
+#### 6-2. 관리자 역할 부여
+![관리자 역할 부여](https://github.com/yoonguri988/ai-data-domain-classifier/blob/73835a99c1888e17e5f799b828b4bb6e500e2bc3/docs/imgs/10_%EC%97%AD%ED%95%A0%EB%B6%80%EC%97%AC.gif)
 
 ### 7. 소셜 로그인
-![소셜 로그인](docs/imgs/07_social_login.gif)
 
 ---
 
